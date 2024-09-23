@@ -1,0 +1,97 @@
+:root {
+    /* Primary Colors */
+    --primary-blue: #003366;      /* Main color that symbolizes formality and authority */
+    --secondary-blue: #0056A2;    /* Accent and background elements */
+    --white: #FFFFFF;              /* Backgrounds and text on dark backgrounds */
+    --gray-background: #F1F1F1;    /* Background for secondary elements */
+    --black: #000000;              /* Main text color */
+
+    /* Accent Colors */
+    --golden-accent: #FFD700;      /* Accents and decorative elements */
+    --error-red: #D32F2F;          /* Reporting errors or critical items */
+
+    /* Dark Mode */
+    --dark-background: #121212;     /* Background for dark mode */
+    --dark-text: #FFFFFF;           /* Text color for dark mode */
+
+    /* Typography */
+    --heading-font-size: 24px;      /* Heading font size */
+    --body-font-size: 16px;         /* Body text font size */
+    --label-font-size: 12px;        /* Labels and small text font size */
+    --heading-line-height: 32px;    /* Line height for headings */
+    --body-line-height: 24px;       /* Line height for body text */
+    --label-line-height: 16px;      /* Line height for labels */
+}
+
+/* Typography Styles */
+h1, h2, h3, h4, h5, h6 {
+    font-size: var(--heading-font-size);
+    font-weight: bold;
+    line-height: var(--heading-line-height);
+    color: var(--primary-blue);
+}
+
+body {
+    font-size: var(--body-font-size);
+    line-height: var(--body-line-height);
+    color: var(--black);
+}
+
+.label {
+    font-size: var(--label-font-size);
+    line-height: var(--label-line-height);
+    color: var(--secondary-blue);
+}
+
+/* Button Styles */
+.button-primary {
+    background-color: var(--primary-blue);
+    color: var(--white);
+    border-radius: 0;
+    padding: 12px 24px;
+}
+
+.button-primary:hover {
+    background-color: #00284D; /* Slightly darker blue */
+}
+
+.button-secondary {
+    background-color: var(--golden-accent);
+    color: var(--black);
+    border-radius: 0;
+    padding: 12px 24px;
+}
+
+.button-secondary:hover {
+    background-color: #D9A300; /* Slightly darker golden accent */
+}
+
+.button-error {
+    background-color: var(--error-red);
+    color: var(--white);
+}
+
+.button-error:hover {
+    background-color: #C62828; /* Slightly darker error red */
+}
+
+/* Chart Styles */
+.chart-palette-1 {
+    --color1: var(--primary-blue);
+    --color2: var(--secondary-blue);
+    --color3: var(--golden-accent);
+    --color4: var(--gray-background);
+    --color5: var(--error-red);
+}
+
+/* Dark Mode Styles */
+.dark-mode {
+    background-color: var(--dark-background);
+    color: var(--dark-text);
+}
+
+.dark-mode .button-primary,
+.dark-mode .button-secondary {
+    background-color: var(--primary-blue);
+    color: var(--white);
+}
