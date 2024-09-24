@@ -128,7 +128,6 @@ function drawLineChart() {
         ctx.fillText(value, padding - 25, y + 5);
     }
 }
-drawLineChart();
 
 // bar chart
 
@@ -178,4 +177,45 @@ function drawBarChart() {
     }
 }
 
+// Pie chart
+
+const pieCanvas = document.getElementById('pie-chart');
+const pieCtx = barCanvas.getContext('2d');
+
+const total = data.reduce((sum, value) => sum + value, 0);
+const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'];
+
+function drawPieChart() {
+    let startAngle = 0;
+
+    data.forEach((value, i) => {
+        const sliceAngle = (value / total) * 2 * Math.PI;
+
+        pieCtx.beginPath();
+        pieCtx.moveTo(pieCanvas.width / 2, pieCanvas.height / 2);
+        pieCtx.arc(
+            pieCanvas.width / 2,
+            pieCanvas.height / 2,
+            pieCanvas.height / 2 - 20,
+            startAngle,
+            startAngle + sliceAngle
+        );
+        pieCtx.closePath();
+
+        pieCtx.fillStyle = colors[i];
+        pieCtx.fill();
+
+        const textX = pieCanvas.width / 2 + Math.cos(startAngle + sliceAngle / 2) * (pieCanvas.height / 3);
+        const textY = pieCanvas.height / 2 + Math.sin(startAngle + sliceAngle / 2) * (pieCanvas.height / 3);
+        ctx.fillStyle = '#000';
+        ctx.font = '14px Arial';
+        ctx.fillText(labels[i], textX - 10, textY);
+
+        // Update startAngle for the next slice
+        startAngle += sliceAngle;
+    })
+}
+
+drawLineChart();
 drawBarChart();
+drawPieChart();
