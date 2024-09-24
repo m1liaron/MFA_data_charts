@@ -49,10 +49,11 @@ body {
 .button-primary {
     background-color: var(--primary-blue);
     color: var(--white);
-    border-radius: 0;
+    border-radius: 5px;
     padding: 12px 24px;
     outline: none;
     border: none;
+    cursor: pointer;
 }
 
 .button-primary:hover {
@@ -62,8 +63,11 @@ body {
 .button-secondary {
     background-color: var(--golden-accent);
     color: var(--black);
-    border-radius: 0;
+    border-radius: 5px;
     padding: 12px 24px;
+    outline: none;
+    border: none;
+    cursor: pointer;
 }
 
 .button-secondary:hover {
@@ -371,5 +375,11 @@ header {
     }
 
     .charts__dropdown__container {
-      
+        position: absolute;
+
+      width: 1rem;
+    }
+
+    .generate__charts__button {
+        margin-top: 10px;
     }
