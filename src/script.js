@@ -68,20 +68,17 @@ dropdownButton.addEventListener('click', () => {
     dropdownMenu.classList.toggle('hide');
 });
 
-
+const data= [10,25,40,30, 45, 60, 70, 100];
+const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const maxValue = Math.max(...data);
 // line chart
 
 const canvas = document.getElementById('line-chart');
 const ctx = canvas.getContext('2d');
 
-const dataPoints = [10,25,40,30, 45, 60, 70, 100];
-const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
-
 const chartWidth = canvas.width - 60;
 const chartHeight  = canvas.height - 60;
 const padding = 30;
-
-const maxValue = Math.max(...dataPoints);
 
 function drawLineChart() {
     ctx.beginPath();
@@ -96,8 +93,8 @@ function drawLineChart() {
     ctx.strokeStyle = '#00afff';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    dataPoints.forEach((point, i) => {
-        const x = padding + (i * (chartWidth / (dataPoints.length - 1)));
+    data.forEach((point, i) => {
+        const x = padding + (i * (chartWidth / (data.length - 1)));
         const y = canvas.height - padding - (point / maxValue) * chartHeight;
 
         if(i === 0) {
@@ -112,7 +109,7 @@ function drawLineChart() {
 
     // Draw labels on the X-axis
     labels.forEach((label, i) => {
-        const x = padding + (i * (chartWidth / ( dataPoints.length - 1)));
+        const x = padding + (i * (chartWidth / ( data.length - 1)));
         const y = canvas.height - padding + 20;
 
         ctx.fillStyle = '#000';
@@ -132,3 +129,53 @@ function drawLineChart() {
     }
 }
 drawLineChart();
+
+// bar chart
+
+const barCanvas = document.getElementById('bar-chart');
+const barCtx = barCanvas.getContext('2d');
+
+// Bar chart dimensions
+const barChartHeight = barCanvas.height - 60; // Padding for labels
+const barPadding = 30;
+const barWidth = 40; // Width of each bar
+
+// Function to draw the bar chart
+function drawBarChart() {
+    // Draw X and Y axis
+    barCtx.beginPath();
+    barCtx.moveTo(barPadding, barPadding);
+    barCtx.lineTo(barPadding, barCanvas.height - barPadding);
+    barCtx.lineTo(barCanvas.width - barPadding, barCanvas.height - barPadding);
+    barCtx.strokeStyle = '#000';
+    barCtx.lineWidth = 2;
+    barCtx.stroke();
+
+    // Draw bars
+    data.forEach((value, i) => {
+        const x = barPadding + i * (barWidth + 20);
+        const y = barCanvas.height - barPadding - (value / maxValue) * barChartHeight;
+
+        // Draw each bar
+        barCtx.fillStyle = '#00aaff';
+        barCtx.fillRect(x, y, barWidth, (value / maxValue) * barChartHeight);
+
+        // Draw labels on the X-axis
+        barCtx.fillStyle = '#000';
+        barCtx.font = '12px Arial';
+        barCtx.fillText(labels[i], x + barWidth / 4, barCanvas.height - barPadding + 20);
+    });
+
+    // Draw Y axis values
+    const stepSize = maxValue / 5;
+    for (let i = 0; i <= 5; i++) {
+        const y = barCanvas.height - barPadding - (i * (barChartHeight / 5));
+        const value = (stepSize * i).toFixed(0);
+
+        barCtx.fillStyle = '#000';
+        barCtx.font = '12px Arial';
+        barCtx.fillText(value, barPadding - 25, y + 5);
+    }
+}
+
+drawBarChart();
