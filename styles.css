@@ -339,7 +339,7 @@ header {
   }
 
   .drag-drop-area {
-      width: 400px;
+      width: 20rem;
       height: 200px;
       border: 2px dashed #ccc;
       border-radius: 5px;
@@ -382,4 +382,16 @@ header {
 
     .generate__charts__button {
         margin-top: 10px;
+    }
+
+    /* visualization__container */
+
+    .visualization__container {
+        flex: 1;
+        width: 100%;
+        margin: 0;
+    }
+
+    .line__chart__canvas {
+        width: 100%;
     }
