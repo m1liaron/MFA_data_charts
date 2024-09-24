@@ -33,6 +33,18 @@
           </label>
     </header>
 
+    <main>
+        <section class="visualization__container">
+            <div class="drag-drop-area" id="drop-area">
+                <h3>Drag and drop files here or click to upload</h3>
+                <input type="file" id="file-input" multiple hidden/>
+            </div>
+            <h4>Appropriate types of files: CSV, Excel, JSON</h4>
+
+            <div id="file-list"></div>
+        </section>
+        <section class="export__container"></section>
+    </main>
     <script src="script.js"></script>
 </body>
 </html>

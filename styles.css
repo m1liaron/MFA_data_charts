@@ -316,3 +316,46 @@ header {
     -ms-transform: translateY(-50%);
     transform: translateY(-50%);
   }
+
+  main {
+      padding: 40px;
+  }
+
+  .visualization__container {
+  }
+
+  .drag-drop-area {
+      width: 400px;
+      height: 200px;
+      border: 2px dashed #ccc;
+      border-radius: 5px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      text-align: center;
+  }
+
+  .drag-drop-area:hover {
+      background-color: #f9f9f9;
+  }
+
+  .drag-drop-area.active {
+      border-color: #00aaff;
+      background-color: #e6f7ff;
+  }
+
+  #file-list {
+      margin-top: 20px;
+      width: 400px;
+  }
+
+
+    .file-item {
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        border-radius: 5px;
+    }
