@@ -58,3 +58,12 @@ function displayFile(file) {
     fileItem.textContent  = `${file.name} (${Math.round(file.size / 1024 )})`
     fileList.appendChild(fileItem);
 }
+
+// dropdown charts button
+
+const dropdownButton = document.querySelector('#dropdown-button');
+const dropdownMenu = document.querySelector('#dropdown-menu');
+
+dropdownButton.addEventListener('click', () => {
+    dropdownMenu.classList.toggle('hide');
+});

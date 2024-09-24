@@ -51,6 +51,8 @@ body {
     color: var(--white);
     border-radius: 0;
     padding: 12px 24px;
+    outline: none;
+    border: none;
 }
 
 .button-primary:hover {
@@ -96,6 +98,14 @@ body {
 .dark-mode .button-secondary {
     background-color: var(--primary-blue);
     color: var(--white);
+}
+
+.active {
+  display: block;
+}
+
+.hide {
+  display: none;
 }
 
 
@@ -358,4 +368,8 @@ header {
         border: 1px solid #ccc;
         background-color: #fff;
         border-radius: 5px;
+    }
+
+    .charts__dropdown__container {
+      
     }
