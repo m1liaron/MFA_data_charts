@@ -69,7 +69,7 @@ dropdownButton.addEventListener('click', () => {
 });
 
 const data= [10,25,40,30, 45, 60, 70, 100];
-const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'];
 const maxValue = Math.max(...data);
 // line chart
 
@@ -180,14 +180,13 @@ function drawBarChart() {
 // Pie chart
 
 const pieCanvas = document.getElementById('pie-chart');
-const pieCtx = barCanvas.getContext('2d');
+const pieCtx = pieCanvas.getContext('2d');
 
 const total = data.reduce((sum, value) => sum + value, 0);
-const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'];
+const colors = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6', '#E6B333', '#3366E6', '#B34D4D']; // 8 unique colors
 
 function drawPieChart() {
     let startAngle = 0;
-
     data.forEach((value, i) => {
         const sliceAngle = (value / total) * 2 * Math.PI;
 
@@ -207,15 +206,33 @@ function drawPieChart() {
 
         const textX = pieCanvas.width / 2 + Math.cos(startAngle + sliceAngle / 2) * (pieCanvas.height / 3);
         const textY = pieCanvas.height / 2 + Math.sin(startAngle + sliceAngle / 2) * (pieCanvas.height / 3);
-        ctx.fillStyle = '#000';
-        ctx.font = '14px Arial';
-        ctx.fillText(labels[i], textX - 10, textY);
+
+        const percentage = ((value / total) * 100).toFixed(1) + '%';
+
+        pieCtx.fillStyle = '#cacaca';
+        pieCtx.font = '14px Arial';
+        pieCtx.fillText(percentage, textX - 10, textY);
 
         // Update startAngle for the next slice
         startAngle += sliceAngle;
     })
 }
 
+function createPirLegend() {
+    const legend = document.getElementById('legend');
+    labels.forEach((label, i) => {
+        const div = document.createElement('div');
+        const colorBox = document.createElement('span');
+        colorBox.style.backgroundColor = colors[i];
+
+        const labelText = document.createTextNode(label + ' ('  + data[i] +  '°)');
+        div.appendChild(colorBox);
+        div.appendChild(labelText);
+        legend.appendChild(div);
+    })
+}
+
 drawLineChart();
 drawBarChart();
 drawPieChart();
+createPirLegend();
