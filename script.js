@@ -3,7 +3,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('file-input');
     const fileList = document.getElementById('file-list');
     const jsonOutput = document.getElementById('json-output');
-    const previewDataContainer = document.getElementById('table');
 
     const uploadedData = [];
 
@@ -63,7 +62,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
     function displayFile(file) {
         const fileItem = document.createElement('div');
-        console.log(file)
         fileItem.classList.add('file-item');
         fileItem.textContent  = `${file.name} (${Math.round(file.size / 1024 )})`
         fileList.appendChild(fileItem);
@@ -81,7 +79,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     const jsonData = JSON.parse(e.target.result);
                     jsonOutput.textContent = JSON.stringify(jsonData, null, 2);
                     addData(jsonData);
-                    createCollumn(jsonData);
+                    createDataPreviewTable(jsonData);
                 } catch(error) {
                     console.log(error);
                     
@@ -98,23 +96,61 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Preview data table
 
-    function createCollumn(tableData) {
-        const columnContainer = document.createDocumentFragment();
-        console.log(tableData);
-        
-        tableData.forEach((_, i) => {
-            const div = document.createElement('div');
-            div.classList.add('table__column__number__container');
-            const span = document.createElement('span');
-            span.classList.add('table__column__number');
-            span.textContent = i;
-            div.appendChild(span);
-            columnContainer.appendChild(div);
-        });
-        console.log(columnContainer);
-        
-        previewDataContainer.appendChild(columnContainer);
+    const tablePlaceholder = document.getElementById("table-placeholder");
+
+    function createDataPreviewTable(tableData) {
+        const tableDiv = document.createElement("table");
+        tableDiv.id = "table";
+        tablePlaceholder.appendChild(tableDiv);
+
+        createRow(tableData);
+        createCollumn(tableData);
     }
+
+    function createCollumn(tableData) {
+        const columnContainer = document.createElement("tbody");
+        const tr = document.createElement("tr");
+        const table = document.getElementById('table');
+        const tableDataValues = Object.values(tableData);
+
+        tableData.forEach((rowData, rowIndex) => {
+            const tr = document.createElement("tr");
+            const th = document.createElement('th');
+            th.textContent = rowIndex + 1;
+            tr.appendChild(th);
+            
+            Object.values(rowData).forEach((value) => {
+                const td = document.createElement('td');
+                td.textContent = value;
+                tr.appendChild(td);
+            })
+
+            columnContainer.appendChild(tr);
+        });
+        
+        columnContainer.appendChild(tr);
+        table.appendChild(columnContainer);
+    }
+
+    function createRow(tableData) {
+        const dataKeys = Object.keys(tableData[0]);
+        const rowContainer = document.createElement("thead");
+        const tr = document.createElement("tr");
+        const previewDataContainer = document.getElementById('table');
+
+        const th = document.createElement('th');
+        th.textContent = ' ';
+        tr.appendChild(th);
+
+        dataKeys.forEach((item) => {
+            const th = document.createElement('th');
+            th.textContent = item;
+            tr.appendChild(th);
+        });
+        rowContainer.appendChild(tr);
+        previewDataContainer.appendChild(rowContainer);
+    }
+
 // ! CHARTS
 // dropdown charts button
 

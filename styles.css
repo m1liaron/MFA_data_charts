@@ -385,17 +385,25 @@ header {
     padding: 10px; /* Optional: add padding for better appearance */
 }
 
-  .preview__data__table {
-    margin: 40px;
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    text-align: center;
+    margin-top: 20px;
   }
 
-  .table__column__number__container {
-    margin-bottom: 5px;
-  }
-
-  .table__column__number {
-    padding: 5px;
+  th, td {
     border: 1px solid #000;
+    padding: 10px;
+  }
+
+  thead th {
+    background-color: #007bff;
+    color: white;
+  }
+
+  tbody th {
+    background-color: #f9f9f9;
   }
 
   .drag-drop-area:hover {
