@@ -35,11 +35,15 @@
 
     <main>
         <section class="visualization__container">
-            <div class="drag-drop-area" id="drop-area">
-                <h3>Drag and drop files here or click to upload</h3>
-                <input type="file" id="file-input" multiple hidden/>
+            <div class="row-container">
+                <div class="drag-drop-area" id="drop-area">
+                    <h3>Drag and drop files here or click to upload</h3>
+                    <input type="file" id="file-input" multiple hidden/>
+                </div>
+                <pre id="json-output"></pre>
+                <div id="table" class="preview__data__table"></div>
             </div>
-            <pre id="json-output"></pre>
+
             <textarea id="manual-data-entry" name="story" rows="5" cols="33"> </textarea>
             <h4>Appropriate types of files: CSV, Excel, JSON</h4>
 

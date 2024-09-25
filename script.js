@@ -3,6 +3,12 @@ window.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('file-input');
     const fileList = document.getElementById('file-list');
     const jsonOutput = document.getElementById('json-output');
+    const previewDataContainer = document.getElementById('table');
+
+    const uploadedData = [];
+
+    const addData = (data) => uploadedData.push(data);
+    const getData = () => uploadedData;
 
     ['dragenter', 'dragover', 'grapleave', 'drop'].forEach(eventName => {
         dropArea.addEventListener(eventName, preventDefaults, false)
@@ -74,8 +80,11 @@ window.addEventListener('DOMContentLoaded', () => {
                 try {
                     const jsonData = JSON.parse(e.target.result);
                     jsonOutput.textContent = JSON.stringify(jsonData, null, 2);
-                    console.log(jsonData);
+                    addData(jsonData);
+                    createCollumn(jsonData);
                 } catch(error) {
+                    console.log(error);
+                    
                     jsonOutput.textContent = "Invalid JSON file";
                     alert('Invalid JSON file');
                 }
@@ -87,6 +96,25 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Preview data table
+
+    function createCollumn(tableData) {
+        const columnContainer = document.createDocumentFragment();
+        console.log(tableData);
+        
+        tableData.forEach((_, i) => {
+            const div = document.createElement('div');
+            div.classList.add('table__column__number__container');
+            const span = document.createElement('span');
+            span.classList.add('table__column__number');
+            span.textContent = i;
+            div.appendChild(span);
+            columnContainer.appendChild(div);
+        });
+        console.log(columnContainer);
+        
+        previewDataContainer.appendChild(columnContainer);
+    }
 // ! CHARTS
 // dropdown charts button
 

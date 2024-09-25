@@ -348,7 +348,7 @@ header {
 
 .visualization__container {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100%;
@@ -356,6 +356,11 @@ header {
     padding: 0;
     box-sizing: border-box;
 }
+
+  .row-container {
+    display: flex; /* Use flexbox to align items in a row */
+    align-items: center; /* Vertically center items */
+  }
 
   .drag-drop-area {
       width: 20rem;
@@ -368,6 +373,29 @@ header {
       cursor: pointer;
       transition: background-color 0.3s ease;
       text-align: center;
+      margin-right: 20px; 
+  }
+
+  #json-output {
+    white-space: pre-wrap; /* Preserve formatting */
+    max-width: 400px; /* Limit width for better display */
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ccc; /* Optional: add a border for distinction */
+    padding: 10px; /* Optional: add padding for better appearance */
+}
+
+  .preview__data__table {
+    margin: 40px;
+  }
+
+  .table__column__number__container {
+    margin-bottom: 5px;
+  }
+
+  .table__column__number {
+    padding: 5px;
+    border: 1px solid #000;
   }
 
   .drag-drop-area:hover {
