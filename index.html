@@ -56,17 +56,43 @@
             <div id="file-list"></div>
         </section>
         <section class="visualization__container">
-<!--            <canvas id="visualization__chart" width="600" height="400"></canvas>-->
-            <canvas id="line-chart" class="line__chart__canvas" width="600" height="400"></canvas>
-            <canvas id="bar-chart" class="bar__chart__canvas" width="600" height="400"></canvas>
+            <div>
+                <!--            <canvas id="visualization__chart" width="600" height="400"></canvas>-->
+                <!--                <canvas id="line-chart" class="line__chart__canvas" width="600" height="400"></canvas>-->
+                <!--                <canvas id="bar-chart" class="bar__chart__canvas" width="600" height="400"></canvas>-->
 
-            <div class="flex">
-                <canvas id="pie-chart" class="bar__chart__canvas" width="600" height="400"></canvas>
-                <div class="legend" id="legend"></div>
+                <div class="flex">
+                    <canvas id="pie-chart" class="bar__chart__canvas" width="600" height="400"></canvas>
+                    <div class="legend" id="legend"></div>
+                </div>
+            </div>
+
+            <div class="customization__container">
+                <form>
+                    <input type="text" placeholder="Graph title" />
+                    <input type="text" placeholder="Captions for the X and Y axes." />
+                    <input type="text" placeholder="Graph title" />
+
+                    <input type="color" />
+                </form>
             </div>
         </section>
-        <section class="export__container"></section>
-    </main>
+        <section class="export__container">
+            <button id="export-btn" class="export__button button-primary">Export graph in</button>
+            <select name="export-select" class="button-secondary" id="select__export">
+                <option value="png">PNG</option>
+                <option value="pdf">PDF</option>
+                <option value="svg">SVG</option>
+            </select>
+            <button id="print-btn" class="print__button button-primary">
+                <span class="material-symbols-outlined">
+                    print
+                </span>
+            </button>
+        </section>
+    </main
+    >
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
