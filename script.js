@@ -2,6 +2,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const dropArea = document.getElementById('drop-area');
     const fileInput = document.getElementById('file-input');
     const fileList = document.getElementById('file-list');
+    const jsonOutput = document.getElementById('json-output');
 
     ['dragenter', 'dragover', 'grapleave', 'drop'].forEach(eventName => {
         dropArea.addEventListener(eventName, preventDefaults, false)
@@ -47,6 +48,7 @@ window.addEventListener('DOMContentLoaded', () => {
         [...files].forEach(file  => {
             if(isFileTypeAllowed(file)){
                 displayFile(file);
+                getJsonFileData(files)
             } else {
                 alert(`File type not allowed: ${file.name}`);
             }
@@ -59,6 +61,30 @@ window.addEventListener('DOMContentLoaded', () => {
         fileItem.classList.add('file-item');
         fileItem.textContent  = `${file.name} (${Math.round(file.size / 1024 )})`
         fileList.appendChild(fileItem);
+    }
+
+
+    function getJsonFileData(files) {
+        const file = files[0];
+
+        if(file && file.type === "application/json") {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                try {
+                    const jsonData = JSON.parse(e.target.result);
+                    jsonOutput.textContent = JSON.stringify(jsonData, null, 2);
+                    console.log(jsonData);
+                } catch(error) {
+                    jsonOutput.textContent = "Invalid JSON file";
+                    alert('Invalid JSON file');
+                }
+            };
+
+            reader.readAsText(file);
+        } else {
+            jsonOutput.textContent = "Please upload a valid JSON file";
+        }
     }
 
 // ! CHARTS
