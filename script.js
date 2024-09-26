@@ -166,15 +166,25 @@ window.addEventListener('DOMContentLoaded', () => {
 // line chart
 
     function drawLineChart(data) {
+        const containerWidth = window.innerWidth * 0.8; // Use 80% of the window width (or parent container width)
+        const canvasWidth = Math.max(containerWidth, 600); // Minimum width of 600px for smaller screens
+        const canvasHeight = 500; // Keep the height fixed, or you can adjust based on container
+
         const div = document.createElement('div');
         div.className = 'flex';
+        div.id = 'lice-chart-container';
+
         const canvas = document.createElement('canvas');
         canvas.id = 'line-chart';
-        canvas.width = 600;
-        canvas.height = 400;
+        canvas.width = canvasWidth;  // Set canvas width adaptively
+        canvas.height = canvasHeight;
+
         const ctx = canvas.getContext('2d');
-        const chartWidth = canvas.width - 60;
-        const chartHeight  = canvas.height - 60;
+
+        // Dynamically calculate chart width, leaving space for the legend
+        const legendWidth = 160; // Fixed width for the legend section
+        const chartWidth = canvas.width - legendWidth - 60; // Chart width based on canvas size
+        const chartHeight = canvas.height - 60; // Keep height consistent
         const padding = 30;
 
         const fields = Object.keys(data[0]).filter(item => item !== 'Year');
@@ -185,14 +195,14 @@ window.addEventListener('DOMContentLoaded', () => {
         ctx.beginPath();
         ctx.moveTo(padding, padding);
         ctx.lineTo(padding, canvas.height - padding);
-        ctx.lineTo(canvas.width - padding, canvas.height - padding);
+        ctx.lineTo(chartWidth + padding, canvas.height - padding); // Adapt chart width
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 3;
         ctx.stroke();
 
         // Draw Y axis values
         const stepSize = maxValue / 5;
-        for(let i = 0; i <= 5; i++) {
+        for (let i = 0; i <= 5; i++) {
             const y = canvas.height - padding - (i * (chartHeight / 5));
             const value = (stepSize * i).toFixed(0);
 
@@ -204,7 +214,7 @@ window.addEventListener('DOMContentLoaded', () => {
         // Draw X-axis labels (years)
         const years = data.map(d => d.Year);
         years.forEach((year, i) => {
-            const x = padding + (i * (chartWidth / (data.length - 1)));
+            const x = padding + (i * (chartWidth / (data.length - 1))); // Adjust based on dynamic width
             const y = canvas.height - padding + 20;
 
             ctx.fillStyle = '#000';
@@ -213,11 +223,9 @@ window.addEventListener('DOMContentLoaded', () => {
         });
 
         // Draw lines for each field
-        const fieldsContainer = document.createElement('div');
-        fieldsContainer.className = 'fields__list__container'
         fields.forEach((field, index) => {
-            const color = getColor(index)
-            ctx.strokeStyle = color;  // Get different color for each line
+            const color = getColor(index);
+            ctx.strokeStyle = color;
             ctx.lineWidth = 2;
             ctx.beginPath();
 
@@ -225,7 +233,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 const x = padding + (i * (chartWidth / (data.length - 1)));
                 const y = canvas.height - padding - (point[field] / maxValue) * chartHeight;
 
-                if(i === 0) {
+                if (i === 0) {
                     ctx.moveTo(x, y);
                 } else {
                     ctx.lineTo(x, y);
@@ -235,23 +243,35 @@ window.addEventListener('DOMContentLoaded', () => {
                 ctx.arc(x, y, 4, 0, 2 * Math.PI);
             });
             ctx.stroke();
-
-            div.appendChild(canvas)
-            const fieldContainer = document.createElement('div');
-            fieldContainer.className = 'field__Container';
-            const fieldDiv = document.createElement('div');
-            fieldDiv.style.background = color;
-            fieldDiv.className = 'field__div';
-            const filedSpan = document.createElement('span');
-            filedSpan.textContent = field;
-
-            fieldContainer.appendChild(fieldDiv);
-            fieldContainer.appendChild(filedSpan);
-
-            fieldsContainer.appendChild(fieldContainer);
-            div.appendChild(fieldsContainer);
         });
+
+        // Draw fields (legend) on the right side of the canvas
+        const legendX = chartWidth + 80;  // Shift legend to the right
+        let legendY = 50;
+
+        fields.forEach((field, index) => {
+            const color = getColor(index);
+
+            // Draw the colored box
+            ctx.fillStyle = color;
+            ctx.fillRect(legendX, legendY, 20, 20);
+
+            // Draw the field name next to the box
+            ctx.fillStyle = '#000';
+            ctx.font = '16px Arial';
+            ctx.fillText(field, legendX + 30, legendY + 15);
+
+            legendY += 30;  // Move down for the next field
+        });
+
+        div.appendChild(canvas);
         chartContainer.appendChild(div);
+
+        // Optionally, resize the canvas if window resizes
+        window.addEventListener('resize', () => {
+            // Redraw chart on window resize for responsiveness
+            drawLineChart(data);
+        });
     }
 
     function getColor(index) {
