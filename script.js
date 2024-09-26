@@ -213,8 +213,11 @@ window.addEventListener('DOMContentLoaded', () => {
         });
 
         // Draw lines for each field
+        const fieldsContainer = document.createElement('div');
+        fieldsContainer.className = 'fields__list__container'
         fields.forEach((field, index) => {
-            ctx.strokeStyle = getColor(index);  // Get different color for each line
+            const color = getColor(index)
+            ctx.strokeStyle = color;  // Get different color for each line
             ctx.lineWidth = 2;
             ctx.beginPath();
 
@@ -232,18 +235,20 @@ window.addEventListener('DOMContentLoaded', () => {
                 ctx.arc(x, y, 4, 0, 2 * Math.PI);
             });
             ctx.stroke();
-        });
-        div.appendChild(canvas)
 
-        const fieldsContainer = document.createElement('div');
-        fields.forEach((field, index) => {
+            div.appendChild(canvas)
+            const fieldContainer = document.createElement('div');
+            fieldContainer.className = 'field__Container';
             const fieldDiv = document.createElement('div');
+            fieldDiv.style.background = color;
+            fieldDiv.className = 'field__div';
             const filedSpan = document.createElement('span');
-            fieldDiv.className = 'field';
             filedSpan.textContent = field;
-            fieldDiv.appendChild(filedSpan)
 
-            fieldsContainer.appendChild(fieldDiv);
+            fieldContainer.appendChild(fieldDiv);
+            fieldContainer.appendChild(filedSpan);
+
+            fieldsContainer.appendChild(fieldContainer);
             div.appendChild(fieldsContainer);
         });
         chartContainer.appendChild(div);
@@ -253,6 +258,24 @@ window.addEventListener('DOMContentLoaded', () => {
         const colors = ['#00afff', '#ff5733', '#33ff57', '#ff33a6', '#33a6ff'];
         return colors[index % colors.length];  // Cycle through colors
     }
+
+    const exportBtn = document.getElementById('export-btn');
+
+    exportBtn.addEventListener('click', () => {
+       const canvas = document.querySelector('#line-chart');
+
+       if(canvas) {
+           const image = canvas.toDataURL('image/png', 1.0);
+
+           const link = document.createElement('a');
+           link.href = image;
+           link.download = 'graph.png';
+           link.click();
+       } else {
+           alert('No chart found to export');
+       }
+    });
+
 
 // // bar chart
 //

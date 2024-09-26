@@ -441,15 +441,22 @@ header {
 
     /* visualization__container */
 
-
-.legend {
-    margin-bottom: 10px;
+.fields__list__container {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    gap: 40px;
 }
-.legend div span {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    margin-right: 10px;
+
+.field__Container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+
+.field__div {
+    width: 40px;
+    height: 10px;
 }
