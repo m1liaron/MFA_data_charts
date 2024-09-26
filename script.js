@@ -3,6 +3,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('file-input');
     const fileList = document.getElementById('file-list');
     const jsonOutput = document.getElementById('json-output');
+    const chartContainer = document.getElementById('chart__container');
 
     const uploadedData = [];
 
@@ -80,6 +81,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     jsonOutput.textContent = JSON.stringify(jsonData, null, 2);
                     addData(jsonData);
                     createDataPreviewTable(jsonData);
+                    drawLineChart(jsonData);
                 } catch(error) {
                     console.log(error);
                     
@@ -161,19 +163,21 @@ window.addEventListener('DOMContentLoaded', () => {
         dropdownMenu.classList.toggle('hide');
     });
 
-    const data= [10,25,40,30, 45, 60, 70, 100];
-    const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'];
-    const maxValue = Math.max(...data);
 // line chart
 
-    const canvas = document.getElementById('line-chart');
-    const ctx = canvas.getContext('2d');
+    function drawLineChart(data) {
+        const canvas = document.createElement('canvas');
+        canvas.id = 'line-chart';
+        const ctx = canvas.getContext('2d');
+        const chartWidth = canvas.width - 60;
+        const chartHeight  = canvas.height - 60;
+        const padding = 30;
 
-    const chartWidth = canvas.width - 60;
-    const chartHeight  = canvas.height - 60;
-    const padding = 30;
+        const fields = Object.keys(data[0]).filter(item => item !== 'Year');
+        const maxValue = Math.max(...data.flatMap(d => fields.map(field => d[field])));
 
-    function drawLineChart() {
+        // Draw X and Y axis
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.beginPath();
         ctx.moveTo(padding, padding);
         ctx.lineTo(padding, canvas.height - padding);
@@ -181,34 +185,6 @@ window.addEventListener('DOMContentLoaded', () => {
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 3;
         ctx.stroke();
-
-        // Draw the data point and the connecting lines
-        ctx.strokeStyle = '#00afff';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        data.forEach((point, i) => {
-            const x = padding + (i * (chartWidth / (data.length - 1)));
-            const y = canvas.height - padding - (point / maxValue) * chartHeight;
-
-            if(i === 0) {
-                ctx.moveTo(x, y);
-            } else {
-                ctx.lineTo(x, y);
-            }
-
-            ctx.arc(x, y, 4, 0, 2 * Math.PI);
-        });
-        ctx.stroke();
-
-        // Draw labels on the X-axis
-        labels.forEach((label, i) => {
-            const x = padding + (i * (chartWidth / ( data.length - 1)));
-            const y = canvas.height - padding + 20;
-
-            ctx.fillStyle = '#000';
-            ctx.font = '12px Arial';
-            ctx.fillText(label, x - 10, y)
-        })
 
         // Draw Y axis values
         const stepSize = maxValue / 5;
@@ -218,115 +194,153 @@ window.addEventListener('DOMContentLoaded', () => {
 
             ctx.fillStyle = '#000';
             ctx.font = '12px Arial';
-            ctx.fillText(value, padding - 25, y + 5);
+            ctx.fillText(value, padding - 30, y + 5);
         }
-    }
 
-// bar chart
+        // Draw X-axis labels (years)
+        const years = data.map(d => d.Year);
+        years.forEach((year, i) => {
+            const x = padding + (i * (chartWidth / (data.length - 1)));
+            const y = canvas.height - padding + 20;
 
-    const barCanvas = document.getElementById('bar-chart');
-    const barCtx = barCanvas.getContext('2d');
-
-// Bar chart dimensions
-    const barChartHeight = barCanvas.height - 60; // Padding for labels
-    const barPadding = 30;
-    const barWidth = 40; // Width of each bar
-
-// Function to draw the bar chart
-    function drawBarChart() {
-        // Draw X and Y axis
-        barCtx.beginPath();
-        barCtx.moveTo(barPadding, barPadding);
-        barCtx.lineTo(barPadding, barCanvas.height - barPadding);
-        barCtx.lineTo(barCanvas.width - barPadding, barCanvas.height - barPadding);
-        barCtx.strokeStyle = '#000';
-        barCtx.lineWidth = 2;
-        barCtx.stroke();
-
-        // Draw bars
-        data.forEach((value, i) => {
-            const x = barPadding + i * (barWidth + 20);
-            const y = barCanvas.height - barPadding - (value / maxValue) * barChartHeight;
-
-            // Draw each bar
-            barCtx.fillStyle = '#00aaff';
-            barCtx.fillRect(x, y, barWidth, (value / maxValue) * barChartHeight);
-
-            // Draw labels on the X-axis
-            barCtx.fillStyle = '#000';
-            barCtx.font = '12px Arial';
-            barCtx.fillText(labels[i], x + barWidth / 4, barCanvas.height - barPadding + 20);
+            ctx.fillStyle = '#000';
+            ctx.font = '12px Arial';
+            ctx.fillText(year, x - 15, y);
         });
 
-        // Draw Y axis values
-        const stepSize = maxValue / 5;
-        for (let i = 0; i <= 5; i++) {
-            const y = barCanvas.height - barPadding - (i * (barChartHeight / 5));
-            const value = (stepSize * i).toFixed(0);
+        // Draw lines for each field
+        fields.forEach((field, index) => {
+            ctx.strokeStyle = getColor(index);  // Get different color for each line
+            ctx.lineWidth = 2;
+            ctx.beginPath();
 
-            barCtx.fillStyle = '#000';
-            barCtx.font = '12px Arial';
-            barCtx.fillText(value, barPadding - 25, y + 5);
-        }
+            data.forEach((point, i) => {
+                const x = padding + (i * (chartWidth / (data.length - 1)));
+                const y = canvas.height - padding - (point[field] / maxValue) * chartHeight;
+
+                if(i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+
+                // Draw small circles for data points
+                ctx.arc(x, y, 4, 0, 2 * Math.PI);
+            });
+            ctx.stroke();
+        });
+        chartContainer.appendChild(canvas);
     }
 
-// Pie chart
-
-    const pieCanvas = document.getElementById('pie-chart');
-    const pieCtx = pieCanvas.getContext('2d');
-
-    const total = data.reduce((sum, value) => sum + value, 0);
-    const colors = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6', '#E6B333', '#3366E6', '#B34D4D']; // 8 unique colors
-
-    function drawPieChart() {
-        let startAngle = 0;
-        data.forEach((value, i) => {
-            const sliceAngle = (value / total) * 2 * Math.PI;
-
-            pieCtx.beginPath();
-            pieCtx.moveTo(pieCanvas.width / 2, pieCanvas.height / 2);
-            pieCtx.arc(
-                pieCanvas.width / 2,
-                pieCanvas.height / 2,
-                pieCanvas.height / 2 - 20,
-                startAngle,
-                startAngle + sliceAngle
-            );
-            pieCtx.closePath();
-
-            pieCtx.fillStyle = colors[i];
-            pieCtx.fill();
-
-            const textX = pieCanvas.width / 2 + Math.cos(startAngle + sliceAngle / 2) * (pieCanvas.height / 3);
-            const textY = pieCanvas.height / 2 + Math.sin(startAngle + sliceAngle / 2) * (pieCanvas.height / 3);
-
-            const percentage = ((value / total) * 100).toFixed(1) + '%';
-
-            pieCtx.fillStyle = '#cacaca';
-            pieCtx.font = '14px Arial';
-            pieCtx.fillText(percentage, textX - 10, textY);
-
-            // Update startAngle for the next slice
-            startAngle += sliceAngle;
-        })
+    function getColor(index) {
+        const colors = ['#00afff', '#ff5733', '#33ff57', '#ff33a6', '#33a6ff'];
+        return colors[index % colors.length];  // Cycle through colors
     }
 
-    function createPirLegend() {
-        const legend = document.getElementById('legend');
-        labels.forEach((label, i) => {
-            const div = document.createElement('div');
-            const colorBox = document.createElement('span');
-            colorBox.style.backgroundColor = colors[i];
+// // bar chart
+//
+//     const barCanvas = document.getElementById('bar-chart');
+//     const barCtx = barCanvas.getContext('2d');
+//
+// // Bar chart dimensions
+//     const barChartHeight = barCanvas.height - 60; // Padding for labels
+//     const barPadding = 30;
+//     const barWidth = 40; // Width of each bar
+//
+// // Function to draw the bar chart
+//     function drawBarChart() {
+//         // Draw X and Y axis
+//         barCtx.beginPath();
+//         barCtx.moveTo(barPadding, barPadding);
+//         barCtx.lineTo(barPadding, barCanvas.height - barPadding);
+//         barCtx.lineTo(barCanvas.width - barPadding, barCanvas.height - barPadding);
+//         barCtx.strokeStyle = '#000';
+//         barCtx.lineWidth = 2;
+//         barCtx.stroke();
+//
+//         // Draw bars
+//         data.forEach((value, i) => {
+//             const x = barPadding + i * (barWidth + 20);
+//             const y = barCanvas.height - barPadding - (value / maxValue) * barChartHeight;
+//
+//             // Draw each bar
+//             barCtx.fillStyle = '#00aaff';
+//             barCtx.fillRect(x, y, barWidth, (value / maxValue) * barChartHeight);
+//
+//             // Draw labels on the X-axis
+//             barCtx.fillStyle = '#000';
+//             barCtx.font = '12px Arial';
+//             barCtx.fillText(labels[i], x + barWidth / 4, barCanvas.height - barPadding + 20);
+//         });
+//
+//         // Draw Y axis values
+//         const stepSize = maxValue / 5;
+//         for (let i = 0; i <= 5; i++) {
+//             const y = barCanvas.height - barPadding - (i * (barChartHeight / 5));
+//             const value = (stepSize * i).toFixed(0);
+//
+//             barCtx.fillStyle = '#000';
+//             barCtx.font = '12px Arial';
+//             barCtx.fillText(value, barPadding - 25, y + 5);
+//         }
+//     }
+//
+// // Pie chart
+//
+//     const pieCanvas = document.getElementById('pie-chart');
+//     const pieCtx = pieCanvas.getContext('2d');
+//
+//     const total = data.reduce((sum, value) => sum + value, 0);
+//     const colors = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6', '#E6B333', '#3366E6', '#B34D4D']; // 8 unique colors
+//
+//     function drawPieChart() {
+//         let startAngle = 0;
+//         data.forEach((value, i) => {
+//             const sliceAngle = (value / total) * 2 * Math.PI;
+//
+//             pieCtx.beginPath();
+//             pieCtx.moveTo(pieCanvas.width / 2, pieCanvas.height / 2);
+//             pieCtx.arc(
+//                 pieCanvas.width / 2,
+//                 pieCanvas.height / 2,
+//                 pieCanvas.height / 2 - 20,
+//                 startAngle,
+//                 startAngle + sliceAngle
+//             );
+//             pieCtx.closePath();
+//
+//             pieCtx.fillStyle = colors[i];
+//             pieCtx.fill();
+//
+//             const textX = pieCanvas.width / 2 + Math.cos(startAngle + sliceAngle / 2) * (pieCanvas.height / 3);
+//             const textY = pieCanvas.height / 2 + Math.sin(startAngle + sliceAngle / 2) * (pieCanvas.height / 3);
+//
+//             const percentage = ((value / total) * 100).toFixed(1) + '%';
+//
+//             pieCtx.fillStyle = '#cacaca';
+//             pieCtx.font = '14px Arial';
+//             pieCtx.fillText(percentage, textX - 10, textY);
+//
+//             // Update startAngle for the next slice
+//             startAngle += sliceAngle;
+//         })
+//     }
+//
+//     function createPirLegend() {
+//         const legend = document.getElementById('legend');
+//         labels.forEach((label, i) => {
+//             const div = document.createElement('div');
+//             const colorBox = document.createElement('span');
+//             colorBox.style.backgroundColor = colors[i];
+//
+//             const labelText = document.createTextNode(label + ' ('  + data[i] +  '°)');
+//             div.appendChild(colorBox);
+//             div.appendChild(labelText);
+//             legend.appendChild(div);
+//         })
+//     }
 
-            const labelText = document.createTextNode(label + ' ('  + data[i] +  '°)');
-            div.appendChild(colorBox);
-            div.appendChild(labelText);
-            legend.appendChild(div);
-        })
-    }
-
-    drawLineChart();
-    drawBarChart();
-    drawPieChart();
-    createPirLegend();
+    // drawBarChart();
+    // drawPieChart();
+    // createPirLegend();
 });
