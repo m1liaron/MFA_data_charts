@@ -166,8 +166,12 @@ window.addEventListener('DOMContentLoaded', () => {
 // line chart
 
     function drawLineChart(data) {
+        const div = document.createElement('div');
+        div.className = 'flex';
         const canvas = document.createElement('canvas');
         canvas.id = 'line-chart';
+        canvas.width = 600;
+        canvas.height = 400;
         const ctx = canvas.getContext('2d');
         const chartWidth = canvas.width - 60;
         const chartHeight  = canvas.height - 60;
@@ -229,7 +233,20 @@ window.addEventListener('DOMContentLoaded', () => {
             });
             ctx.stroke();
         });
-        chartContainer.appendChild(canvas);
+        div.appendChild(canvas)
+
+        const fieldsContainer = document.createElement('div');
+        fields.forEach((field, index) => {
+            const fieldDiv = document.createElement('div');
+            const filedSpan = document.createElement('span');
+            fieldDiv.className = 'field';
+            filedSpan.textContent = field;
+            fieldDiv.appendChild(filedSpan)
+
+            fieldsContainer.appendChild(fieldDiv);
+            div.appendChild(fieldsContainer);
+        });
+        chartContainer.appendChild(div);
     }
 
     function getColor(index) {
