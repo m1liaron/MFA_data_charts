@@ -305,11 +305,10 @@ window.addEventListener('DOMContentLoaded', () => {
 //
 // // Function to draw the bar chart
 function drawBarChart(data) {
-    console.log(data);
     // Get all keys (excluding 'Year') for the data series
     const keys = Object.keys(data[0]).filter(key => key !== 'Year')
     const labels = data.map(item => item.Year);
-    
+
     const dataSeries = keys.map(key => data.map(item => item[key]));
     const maxValue = Math.max(...dataSeries.flat());
 
@@ -317,6 +316,9 @@ function drawBarChart(data) {
     const barCanvas = document.createElement('canvas');
     barCanvas.id = 'bar-chart';
     const barCtx = barCanvas.getContext('2d');
+        
+    chartContainer.innerHTML = '';
+    chartContainer.appendChild(barCanvas);
 
     barCanvas.width = 900;
     barCanvas.height = 400;
