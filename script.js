@@ -82,6 +82,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     addData(jsonData);
                     createDataPreviewTable(jsonData);
                     drawLineChart(jsonData);
+                    drawBarChart(jsonData);
                 } catch(error) {
                     console.log(error);
                     
@@ -267,11 +268,6 @@ window.addEventListener('DOMContentLoaded', () => {
         div.appendChild(canvas);
         chartContainer.appendChild(div);
 
-        // Optionally, resize the canvas if window resizes
-        window.addEventListener('resize', () => {
-            // Redraw chart on window resize for responsiveness
-            drawLineChart(data);
-        });
     }
 
     function getColor(index) {
@@ -308,42 +304,86 @@ window.addEventListener('DOMContentLoaded', () => {
 //     const barWidth = 40; // Width of each bar
 //
 // // Function to draw the bar chart
-//     function drawBarChart() {
-//         // Draw X and Y axis
-//         barCtx.beginPath();
-//         barCtx.moveTo(barPadding, barPadding);
-//         barCtx.lineTo(barPadding, barCanvas.height - barPadding);
-//         barCtx.lineTo(barCanvas.width - barPadding, barCanvas.height - barPadding);
-//         barCtx.strokeStyle = '#000';
-//         barCtx.lineWidth = 2;
-//         barCtx.stroke();
-//
-//         // Draw bars
-//         data.forEach((value, i) => {
-//             const x = barPadding + i * (barWidth + 20);
-//             const y = barCanvas.height - barPadding - (value / maxValue) * barChartHeight;
-//
-//             // Draw each bar
-//             barCtx.fillStyle = '#00aaff';
-//             barCtx.fillRect(x, y, barWidth, (value / maxValue) * barChartHeight);
-//
-//             // Draw labels on the X-axis
-//             barCtx.fillStyle = '#000';
-//             barCtx.font = '12px Arial';
-//             barCtx.fillText(labels[i], x + barWidth / 4, barCanvas.height - barPadding + 20);
-//         });
-//
-//         // Draw Y axis values
-//         const stepSize = maxValue / 5;
-//         for (let i = 0; i <= 5; i++) {
-//             const y = barCanvas.height - barPadding - (i * (barChartHeight / 5));
-//             const value = (stepSize * i).toFixed(0);
-//
-//             barCtx.fillStyle = '#000';
-//             barCtx.font = '12px Arial';
-//             barCtx.fillText(value, barPadding - 25, y + 5);
-//         }
-//     }
+function drawBarChart(data) {
+    console.log(data);
+    // Get all keys (excluding 'Year') for the data series
+    const keys = Object.keys(data[0]).filter(key => key !== 'Year')
+    const labels = data.map(item => item.Year);
+    
+    const dataSeries = keys.map(key => data.map(item => item[key]));
+    const maxValue = Math.max(...dataSeries.flat());
+
+    // Create canvas
+    const barCanvas = document.createElement('canvas');
+    barCanvas.id = 'bar-chart';
+    const barCtx = barCanvas.getContext('2d');
+
+    barCanvas.width = 900;
+    barCanvas.height = 400;
+
+    // Bar chart dimensions
+    const barChartHeight = barCanvas.height - 60; // Padding for labels
+    const barPadding = 50;
+    const barWidth = 40; // Width of each bar group (multiple series per year)
+    const seriedPadding = 10;
+
+    // Clear the canvas
+    barCtx.clearRect(0, 0, barCanvas.width, barCanvas.height);
+
+    // Draw X and Y axis
+    barCtx.beginPath();
+    barCtx.moveTo(barPadding, barPadding);
+    barCtx.lineTo(barPadding, barCanvas.height - barPadding);
+    barCtx.lineTo(barCanvas.width - barPadding, barCanvas.height - barPadding);
+    barCtx.strokeStyle = '#000';
+    barCtx.lineWidth = 2;
+    barCtx.stroke();
+
+    // Color array for multiple series
+    labels.forEach((label, i) => {
+        keys.forEach((key, j) => {
+            const value = dataSeries[j][i];
+            const x = barPadding + i * (barWidth + 40) + j * (barWidth / keys.length + seriedPadding);
+            const y = barCanvas.height - barPadding - (value / maxValue) * barChartHeight
+        
+        
+            barCtx.fillStyle = getColor(j);
+            barCtx.fillRect(x, y, barWidth / keys.length, (value / maxValue) * barChartHeight);
+        });
+
+        barCtx.fillStyle = '#000';
+        barCtx.font = '12px Arial';
+        const labelX = barPadding + i * ( barWidth + 40);
+        barCtx.fillText(label, labelX + barWidth / 4, barCanvas.height - barPadding + 20);
+    });
+
+    // Draw Y axis values (scaling on Y-axis)
+    const stepSize = maxValue / 5;
+    for (let i = 0; i <= 5; i++) {
+        const y = barCanvas.height - barPadding - (i * (barChartHeight / 5));
+        const value = (stepSize * i).toFixed(0);
+
+        barCtx.fillStyle = '#000';
+        barCtx.font = '12px Arial';
+        barCtx.fillText(value, barPadding - 40, y + 5);
+    }
+
+    // Add a legend
+    keys.forEach((key, index) => {
+        const legendX = barCanvas.width - barPadding + 10;
+        const legendY = barPadding + index * 20;
+
+        // Color square for the legend
+        barCtx.fillStyle = getColor(index);
+        barCtx.fillRect(legendX, legendY, 15, 15);
+
+        // Series name
+        barCtx.fillStyle = '#000';
+        barCtx.font = '12px Arial';
+        barCtx.fillText(key, legendX + 20, legendY + 12);
+    });
+    chartContainer.appendChild(barCanvas)
+}
 //
 // // Pie chart
 //
