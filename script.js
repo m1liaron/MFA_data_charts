@@ -10,6 +10,16 @@ window.addEventListener('DOMContentLoaded', () => {
     const addData = (data) => uploadedData.push(data);
     const getData = () => uploadedData;
 
+
+    // Common functions
+
+    function getColor(index) {
+        const colors = ['#00afff', '#ff5733', '#33ff57', '#ff33a6', '#33a6ff'];
+        return colors[index % colors.length];  // Cycle through colors
+    }
+
+    // Drag & drop functionality
+
     ['dragenter', 'dragover', 'grapleave', 'drop'].forEach(eventName => {
         dropArea.addEventListener(eventName, preventDefaults, false)
     });
@@ -108,10 +118,10 @@ window.addEventListener('DOMContentLoaded', () => {
         tablePlaceholder.appendChild(tableDiv);
 
         createRow(tableData);
-        createCollumn(tableData);
+        createColumn(tableData);
     }
 
-    function createCollumn(tableData) {
+    function createColumn(tableData) {
         const columnContainer = document.createElement("tbody");
         const tr = document.createElement("tr");
         const table = document.getElementById('table');
@@ -164,9 +174,26 @@ window.addEventListener('DOMContentLoaded', () => {
         dropdownMenu.classList.toggle('hide');
     });
 
-// line chart
+    const exportBtn = document.getElementById('export-btn');
 
-    function drawLineChart(data) {
+    exportBtn.addEventListener('click', () => {
+       const canvas = document.querySelector('#line-chart');
+
+       if(canvas) {
+           const image = canvas.toDataURL('image/png', 1.0);
+
+           const link = document.createElement('a');
+           link.href = image;
+           link.download = 'graph.png';
+           link.click();
+       } else {
+           alert('No chart found to export');
+       }
+    });
+
+
+// line chart
+function drawLineChart(data) {
         const containerWidth = window.innerWidth * 0.8; // Use 80% of the window width (or parent container width)
         const canvasWidth = Math.max(containerWidth, 600); // Minimum width of 600px for smaller screens
         const canvasHeight = 500; // Keep the height fixed, or you can adjust based on container
@@ -268,42 +295,9 @@ window.addEventListener('DOMContentLoaded', () => {
         div.appendChild(canvas);
         chartContainer.appendChild(div);
 
-    }
+}
 
-    function getColor(index) {
-        const colors = ['#00afff', '#ff5733', '#33ff57', '#ff33a6', '#33a6ff'];
-        return colors[index % colors.length];  // Cycle through colors
-    }
-
-    const exportBtn = document.getElementById('export-btn');
-
-    exportBtn.addEventListener('click', () => {
-       const canvas = document.querySelector('#line-chart');
-
-       if(canvas) {
-           const image = canvas.toDataURL('image/png', 1.0);
-
-           const link = document.createElement('a');
-           link.href = image;
-           link.download = 'graph.png';
-           link.click();
-       } else {
-           alert('No chart found to export');
-       }
-    });
-
-
-// // bar chart
-//
-//     const barCanvas = document.getElementById('bar-chart');
-//     const barCtx = barCanvas.getContext('2d');
-//
-// // Bar chart dimensions
-//     const barChartHeight = barCanvas.height - 60; // Padding for labels
-//     const barPadding = 30;
-//     const barWidth = 40; // Width of each bar
-//
-// // Function to draw the bar chart
+// bar chart
 function drawBarChart(data) {
     // Get all keys (excluding 'Year') for the data series
     const keys = Object.keys(data[0]).filter(key => key !== 'Year')
@@ -386,81 +380,95 @@ function drawBarChart(data) {
     });
     chartContainer.appendChild(barCanvas)
 }
-//
-// // Pie chart
-    function drawPieChart(data) {
+
+// Pie chart
+function drawPieChart(data) {
         const pieCanvas = document.createElement('canvas');
         pieCanvas.id = 'pie-chart';
         pieCanvas.width = window.innerWidth - 100;
-        pieCanvas.height = window.innerHeight - 400;
+        pieCanvas.height = window.innerHeight - 450;
+
         const pieCtx = pieCanvas.getContext('2d');
+        chartContainer.innerHTML = ''
+        chartContainer.appendChild(pieCanvas);
 
-        const keys = Object.keys(data[0]).filter(key => key !== 'Year');
-        const total = keys.reduce((sum, key) => sum + data[0][key], 0);
+        let keyId = 0;
 
-        const yearX = pieCanvas.width - 1000;
-        const yearY = 30 + 1 / 50;
+        const buttonX = pieCanvas.width - 200;
+        const buttonY = 50;
+        const buttonWidth = 150;
+        const buttonHeight = 40;
 
-        pieCtx.fillStyle = '#000';
-        pieCtx.font = '30px Arial';
-        pieCtx.fillText(data[0]['Year'], yearX + 20, yearY + 12);
+        function isButtonClicked(x, y) {
+            return x >= buttonX && x <= buttonX + buttonWidth &&
+                   y >= buttonY && y <= buttonY + buttonHeight;
+        }
 
-        const radius = pieCanvas.height / 2 - 20
-        let startAngle = 0;
-        keys.forEach((key, i) => {
-            const value = data[0][key];
-            const sliceAngle = (value / total) * 2 * Math.PI;
-            const color = getColor(i);
+        function updateChart() {
+            pieCtx.clearRect(0, 0, pieCanvas.width, pieCanvas.height);
 
-            pieCtx.beginPath();
-            pieCtx.moveTo(pieCanvas.width / 2, pieCanvas.height / 2);
-            pieCtx.arc(
-                pieCanvas.width / 2,
-                pieCanvas.height / 2,
-                radius,
-                startAngle,
-                startAngle + sliceAngle
-            );
-            pieCtx.closePath();
+            const keys = Object.keys(data[keyId]).filter(key => key !== 'Year');
+            const total = keys.reduce((sum, key) => sum + data[keyId][key], 0);
 
-            pieCtx.fillStyle = color;
-            pieCtx.fill();
+            const radius = pieCanvas.height / 2 - 20
+            let startAngle = 0;
+            keys.forEach((key, i) => {
+                const value = data[keyId][key];
+                const sliceAngle = (value / total) * 2 * Math.PI;
+                const color = getColor(i);
 
-            const textX = pieCanvas.width / 2 + Math.cos(startAngle + sliceAngle / 2) * (radius / 1.5);
-            const textY = pieCanvas.height / 2 + Math.sin(startAngle + sliceAngle / 2) * (radius / 1.5);
-            const percentage = ((value / total) * 100).toFixed(1) + '%';
+                pieCtx.beginPath();
+                pieCtx.moveTo(pieCanvas.width / 2, pieCanvas.height / 2);
+                pieCtx.arc(
+                    pieCanvas.width / 2,
+                    pieCanvas.height / 2,
+                    radius,
+                    startAngle,
+                    startAngle + sliceAngle
+                );
+                pieCtx.closePath();
 
+                pieCtx.fillStyle = color;
+                pieCtx.fill();
+
+                const textX = pieCanvas.width / 2 + Math.cos(startAngle + sliceAngle / 2) * (radius / 1.5);
+                const textY = pieCanvas.height / 2 + Math.sin(startAngle + sliceAngle / 2) * (radius / 1.5);
+                const percentage = ((value / total) * 100).toFixed(1) + '%';
+
+                pieCtx.fillStyle = '#000';
+                pieCtx.font = '20px Arial';
+                pieCtx.fillText(percentage, textX, textY);
+
+                // Update startAngle for the next slice
+                startAngle += sliceAngle;
+
+
+                // Draw a legends
+                const legendX = pieCanvas.width - 500;
+                const legendY = 30 + i * 30;
+
+                pieCtx.fillStyle = color;
+                pieCtx.font = '20px Arial';
+                pieCtx.fillText(key, legendX + 20, legendY + 12);
+            });
+
+            // Draw a Year
             pieCtx.fillStyle = '#000';
-            pieCtx.font = '20px Arial';
-            pieCtx.fillText(percentage, textX, textY);
+            pieCtx.font = '30px Arial';
+            pieCtx.fillText(`Year: ${data[keyId]['Year']}`, pieCanvas.width / 3.5 - 50, 22);
+        }
 
-            // Update startAngle for the next slice
-            startAngle += sliceAngle;
+        const nextYearButton = document.createElement('button');
+        nextYearButton.textContent = 'Next year';
+        nextYearButton.className = 'button-primary';
 
-
-            // Draw a legends
-            const legendX = pieCanvas.width - 500;
-            const legendY = 30 + i * 40;
-
-            pieCtx.fillStyle = color;
-            pieCtx.font = '20px Arial';
-            pieCtx.fillText(key, legendX + 20, legendY + 12);
+        nextYearButton.addEventListener('click', () => {
+            keyId = (keyId + 1) % data.length;
+            updateChart();
         });
+        updateChart();
 
+        chartContainer.appendChild(nextYearButton);
         chartContainer.appendChild(pieCanvas);
     }
-//
-//     function createPirLegend() {
-//         const legend = document.getElementById('legend');
-//         labels.forEach((label, i) => {
-//             const div = document.createElement('div');
-//             const colorBox = document.createElement('span');
-//             colorBox.style.backgroundColor = colors[i];
-//
-//             const labelText = document.createTextNode(label + ' ('  + data[i] +  '°)');
-//             div.appendChild(colorBox);
-//             div.appendChild(labelText);
-//             legend.appendChild(div);
-//         })
-//     }
 });
