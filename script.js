@@ -36,7 +36,6 @@ window.addEventListener('DOMContentLoaded', () => {
     function uploadDisplayData(data, file) {
         uploadedData = data;
         createDataPreviewTable(data);
-        console.log(data)
         displayFile(file);
     }
 
@@ -120,20 +119,26 @@ window.addEventListener('DOMContentLoaded', () => {
     function handleFiles(files) {
         [...files].forEach(file  => {
             if(isFileTypeAllowed(file)){
-                validateDataFileType(file, files);
+                validateDataFileType(file);
             } else {
                 showError('Error type', `Type is not allowed: : ${file.name}`)
             }
         });
     }
 
-    function validateDataFileType(file, files) {
+    function validateDataFileType(file) {
         switch (file.type) {
             case 'application/json':
-                validateJsonFile(files);
+                validateJsonFile(file);
                 break;
             case 'text/csv':
-                validateCSVFile(files);
+                validateCSVFile(file);
+                break;
+            case 'application/vnd.ms-excel' :
+                validateXLSFile(file);
+                break;
+            case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' :
+                validateXLSFile(file);
                 break;
             default:
                 break;
@@ -152,9 +157,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Functions to validate file
 
-    function validateJsonFile(files) {
-        const file = files[0];
-
+    function validateJsonFile(file) {
         if(file && file.type === "application/json") {
             const reader = new FileReader();
 
@@ -175,9 +178,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function validateCSVFile(files) {
-        const file = files[0];
-
+    function validateCSVFile(file) {
         if(file) {
             const reader = new FileReader();
 
@@ -193,6 +194,29 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
             }
             reader.readAsText(file);
+        }
+    }
+
+    function validateXLSFile(file) {
+        if(file) {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' })
+                console.log(data)
+
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const sheetData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                uploadedData = sheetData;
+                jsonOutput.textContent = sheetData;
+            }
+
+            reader.readAsArrayBuffer(file);
+        } else {
+            showError('File is not exist');
         }
     }
 
