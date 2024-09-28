@@ -48,7 +48,6 @@ body {
     line-height: var(--body-line-height);
     color: var(--black);
     margin: 0 auto;
-    max-width: 1280px;
 }
 
 .label {
@@ -356,6 +355,7 @@ header {
     width: 100%;
     padding: 0;
     box-sizing: border-box;
+    margin-bottom: 100px;
 }
 
   .row-container {

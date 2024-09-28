@@ -54,7 +54,7 @@ window.addEventListener('DOMContentLoaded', () => {
         [...files].forEach(file  => {
             if(isFileTypeAllowed(file)){
                 displayFile(file);
-                getJsonFileData(files)
+                getJsonFileData(files);
             } else {
                 alert(`File type not allowed: ${file.name}`);
             }
@@ -81,8 +81,9 @@ window.addEventListener('DOMContentLoaded', () => {
                     jsonOutput.textContent = JSON.stringify(jsonData, null, 2);
                     addData(jsonData);
                     createDataPreviewTable(jsonData);
-                    drawLineChart(jsonData);
-                    drawBarChart(jsonData);
+                    // drawLineChart(jsonData);
+                    // drawBarChart(jsonData);
+                    drawPieChart(jsonData)
                 } catch(error) {
                     console.log(error);
                     
@@ -114,7 +115,6 @@ window.addEventListener('DOMContentLoaded', () => {
         const columnContainer = document.createElement("tbody");
         const tr = document.createElement("tr");
         const table = document.getElementById('table');
-        const tableDataValues = Object.values(tableData);
 
         tableData.forEach((rowData, rowIndex) => {
             const tr = document.createElement("tr");
@@ -388,45 +388,67 @@ function drawBarChart(data) {
 }
 //
 // // Pie chart
-//
-//     const pieCanvas = document.getElementById('pie-chart');
-//     const pieCtx = pieCanvas.getContext('2d');
-//
-//     const total = data.reduce((sum, value) => sum + value, 0);
-//     const colors = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6', '#E6B333', '#3366E6', '#B34D4D']; // 8 unique colors
-//
-//     function drawPieChart() {
-//         let startAngle = 0;
-//         data.forEach((value, i) => {
-//             const sliceAngle = (value / total) * 2 * Math.PI;
-//
-//             pieCtx.beginPath();
-//             pieCtx.moveTo(pieCanvas.width / 2, pieCanvas.height / 2);
-//             pieCtx.arc(
-//                 pieCanvas.width / 2,
-//                 pieCanvas.height / 2,
-//                 pieCanvas.height / 2 - 20,
-//                 startAngle,
-//                 startAngle + sliceAngle
-//             );
-//             pieCtx.closePath();
-//
-//             pieCtx.fillStyle = colors[i];
-//             pieCtx.fill();
-//
-//             const textX = pieCanvas.width / 2 + Math.cos(startAngle + sliceAngle / 2) * (pieCanvas.height / 3);
-//             const textY = pieCanvas.height / 2 + Math.sin(startAngle + sliceAngle / 2) * (pieCanvas.height / 3);
-//
-//             const percentage = ((value / total) * 100).toFixed(1) + '%';
-//
-//             pieCtx.fillStyle = '#cacaca';
-//             pieCtx.font = '14px Arial';
-//             pieCtx.fillText(percentage, textX - 10, textY);
-//
-//             // Update startAngle for the next slice
-//             startAngle += sliceAngle;
-//         })
-//     }
+    function drawPieChart(data) {
+        const pieCanvas = document.createElement('canvas');
+        pieCanvas.id = 'pie-chart';
+        pieCanvas.width = window.innerWidth - 100;
+        pieCanvas.height = window.innerHeight - 400;
+        const pieCtx = pieCanvas.getContext('2d');
+
+        const keys = Object.keys(data[0]).filter(key => key !== 'Year');
+        const total = keys.reduce((sum, key) => sum + data[0][key], 0);
+
+        const yearX = pieCanvas.width - 1000;
+        const yearY = 30 + 1 / 50;
+
+        pieCtx.fillStyle = '#000';
+        pieCtx.font = '30px Arial';
+        pieCtx.fillText(data[0]['Year'], yearX + 20, yearY + 12);
+
+        const radius = pieCanvas.height / 2 - 20
+        let startAngle = 0;
+        keys.forEach((key, i) => {
+            const value = data[0][key];
+            const sliceAngle = (value / total) * 2 * Math.PI;
+            const color = getColor(i);
+
+            pieCtx.beginPath();
+            pieCtx.moveTo(pieCanvas.width / 2, pieCanvas.height / 2);
+            pieCtx.arc(
+                pieCanvas.width / 2,
+                pieCanvas.height / 2,
+                radius,
+                startAngle,
+                startAngle + sliceAngle
+            );
+            pieCtx.closePath();
+
+            pieCtx.fillStyle = color;
+            pieCtx.fill();
+
+            const textX = pieCanvas.width / 2 + Math.cos(startAngle + sliceAngle / 2) * (radius / 1.5);
+            const textY = pieCanvas.height / 2 + Math.sin(startAngle + sliceAngle / 2) * (radius / 1.5);
+            const percentage = ((value / total) * 100).toFixed(1) + '%';
+
+            pieCtx.fillStyle = '#000';
+            pieCtx.font = '20px Arial';
+            pieCtx.fillText(percentage, textX, textY);
+
+            // Update startAngle for the next slice
+            startAngle += sliceAngle;
+
+
+            // Draw a legends
+            const legendX = pieCanvas.width - 500;
+            const legendY = 30 + i * 40;
+
+            pieCtx.fillStyle = color;
+            pieCtx.font = '20px Arial';
+            pieCtx.fillText(key, legendX + 20, legendY + 12);
+        });
+
+        chartContainer.appendChild(pieCanvas);
+    }
 //
 //     function createPirLegend() {
 //         const legend = document.getElementById('legend');
@@ -441,8 +463,4 @@ function drawBarChart(data) {
 //             legend.appendChild(div);
 //         })
 //     }
-
-    // drawBarChart();
-    // drawPieChart();
-    // createPirLegend();
 });
