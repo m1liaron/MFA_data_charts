@@ -4,18 +4,34 @@ window.addEventListener('DOMContentLoaded', () => {
     const fileList = document.getElementById('file-list');
     const jsonOutput = document.getElementById('json-output');
     const chartContainer = document.getElementById('chart__container');
+    const uploadedDataContainer = document.getElementById('uploaded-data-container');
+    // Generation chart elements
+    const dropdownButton = document.getElementById('dropdown-select');
+    const generateChartBtn = document.getElementById('generate-chart-btn');
 
-    const uploadedData = [];
-
-    const addData = (data) => uploadedData.push(data);
-    const getData = () => uploadedData;
-
+    let uploadedData;
+    let chosenChartType = 'Line';
 
     // Common functions
 
     function getColor(index) {
         const colors = ['#00afff', '#ff5733', '#33ff57', '#ff33a6', '#33a6ff'];
         return colors[index % colors.length];  // Cycle through colors
+    }
+
+    function addCanvasToChartContainer(canvas) {
+        chartContainer.innerHTML = '';
+        chartContainer.appendChild(canvas);
+    }
+
+    function createElement ({tag, className, id, textContent, width, height }) {
+        const element = document.createElement(tag);
+        element.id = id;
+        element.className = className;
+        element.textContent = textContent;
+        element.width = width;
+        element.height = height;
+        return element;
     }
 
     // Drag & drop functionality
@@ -63,23 +79,31 @@ window.addEventListener('DOMContentLoaded', () => {
     function handleFiles(files) {
         [...files].forEach(file  => {
             if(isFileTypeAllowed(file)){
-                displayFile(file);
-                getJsonFileData(files);
+                getDataFileType(file, files);
             } else {
                 alert(`File type not allowed: ${file.name}`);
             }
         });
     }
 
-    function displayFile(file) {
-        const fileItem = document.createElement('div');
-        fileItem.classList.add('file-item');
-        fileItem.textContent  = `${file.name} (${Math.round(file.size / 1024 )})`
-        fileList.appendChild(fileItem);
+    function getDataFileType(file, files) {
+        switch (file.type) {
+            case 'application/json':
+                validateJsonFile(files);
+                break;
+        }
     }
 
+    function displayFile(file) {
+        const fileItem = createElement({
+            tag:'div',
+            className:'file-item',
+            textContent: `${file.name} (${Math.round(file.size / 1024 )})`
+        });
+        uploadedDataContainer.insertAdjacentElement('afterend', fileItem);
+    }
 
-    function getJsonFileData(files) {
+    function validateJsonFile(files) {
         const file = files[0];
 
         if(file && file.type === "application/json") {
@@ -89,11 +113,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 try {
                     const jsonData = JSON.parse(e.target.result);
                     jsonOutput.textContent = JSON.stringify(jsonData, null, 2);
-                    addData(jsonData);
+                    uploadedData = jsonData;
                     createDataPreviewTable(jsonData);
-                    // drawLineChart(jsonData);
-                    // drawBarChart(jsonData);
-                    drawPieChart(jsonData)
+                    displayFile(file);
                 } catch(error) {
                     console.log(error);
                     
@@ -109,12 +131,10 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     // Preview data table
-
     const tablePlaceholder = document.getElementById("table-placeholder");
 
     function createDataPreviewTable(tableData) {
-        const tableDiv = document.createElement("table");
-        tableDiv.id = "table";
+        const tableDiv= createElement({ tag:"table", id: "table" });
         tablePlaceholder.appendChild(tableDiv);
 
         createRow(tableData);
@@ -122,19 +142,17 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     function createColumn(tableData) {
-        const columnContainer = document.createElement("tbody");
-        const tr = document.createElement("tr");
+        const columnContainer = createElement({ tag: 'tbody' });
+        const tr = createElement({ tag: 'tr'});
         const table = document.getElementById('table');
 
         tableData.forEach((rowData, rowIndex) => {
-            const tr = document.createElement("tr");
-            const th = document.createElement('th');
-            th.textContent = rowIndex + 1;
+            const tr = createElement({ tag: 'tr' });
+            const th = createElement({ tag: 'th', textContent: rowIndex + 1 });
             tr.appendChild(th);
             
             Object.values(rowData).forEach((value) => {
-                const td = document.createElement('td');
-                td.textContent = value;
+                const td = createElement({ tag: 'td', textContent: value });
                 tr.appendChild(td);
             })
 
@@ -147,17 +165,15 @@ window.addEventListener('DOMContentLoaded', () => {
 
     function createRow(tableData) {
         const dataKeys = Object.keys(tableData[0]);
-        const rowContainer = document.createElement("thead");
-        const tr = document.createElement("tr");
+        const rowContainer = createElement({ tag: "thead" });
+        const tr = createElement({ tag: "tr" });
         const previewDataContainer = document.getElementById('table');
 
-        const th = document.createElement('th');
-        th.textContent = ' ';
+        const th = createElement({ tag: 'th', textContent: '' });
         tr.appendChild(th);
 
         dataKeys.forEach((item) => {
-            const th = document.createElement('th');
-            th.textContent = item;
+            const th = createElement({ tag: 'th', textContent: item });
             tr.appendChild(th);
         });
         rowContainer.appendChild(tr);
@@ -165,32 +181,31 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
 // ! CHARTS
-// dropdown charts button
+// Generation chart
 
-    const dropdownButton = document.querySelector('#dropdown-button');
-    const dropdownMenu = document.querySelector('#dropdown-menu');
+dropdownButton.addEventListener('change', (e) => {
+    chosenChartType = e.target.value;
+});
 
-    dropdownButton.addEventListener('click', () => {
-        dropdownMenu.classList.toggle('hide');
-    });
+generateChartBtn.addEventListener('click', () => drawChosenChart(chosenChartType));
 
-    const exportBtn = document.getElementById('export-btn');
+function drawChosenChart(chartType) {
+    switch (chartType) {
+        case 'Line':
+            drawLineChart(uploadedData);
+            break;
+        case 'Bar':
+            drawBarChart(uploadedData);
+            break;
+        case 'Pie':
+            drawPieChart(uploadedData);
+            break;
+        default:
+            break;
+    }
+}
 
-    exportBtn.addEventListener('click', () => {
-       const canvas = document.querySelector('#line-chart');
-
-       if(canvas) {
-           const image = canvas.toDataURL('image/png', 1.0);
-
-           const link = document.createElement('a');
-           link.href = image;
-           link.download = 'graph.png';
-           link.click();
-       } else {
-           alert('No chart found to export');
-       }
-    });
-
+// Generate chart
 
 // line chart
 function drawLineChart(data) {
@@ -198,14 +213,7 @@ function drawLineChart(data) {
         const canvasWidth = Math.max(containerWidth, 600); // Minimum width of 600px for smaller screens
         const canvasHeight = 500; // Keep the height fixed, or you can adjust based on container
 
-        const div = document.createElement('div');
-        div.className = 'flex';
-        div.id = 'lice-chart-container';
-
-        const canvas = document.createElement('canvas');
-        canvas.id = 'line-chart';
-        canvas.width = canvasWidth;  // Set canvas width adaptively
-        canvas.height = canvasHeight;
+        const canvas = createElement({ tag: 'canvas', id: 'line-chart', width: canvasWidth, height: canvasHeight });
 
         const ctx = canvas.getContext('2d');
 
@@ -292,9 +300,7 @@ function drawLineChart(data) {
             legendY += 30;  // Move down for the next field
         });
 
-        div.appendChild(canvas);
-        chartContainer.appendChild(div);
-
+        addCanvasToChartContainer(canvas);
 }
 
 // bar chart
@@ -307,12 +313,9 @@ function drawBarChart(data) {
     const maxValue = Math.max(...dataSeries.flat());
 
     // Create canvas
-    const barCanvas = document.createElement('canvas');
+    const barCanvas = createElement({ tag:'canvas', id: 'bar-chart' });
     barCanvas.id = 'bar-chart';
     const barCtx = barCanvas.getContext('2d');
-        
-    chartContainer.innerHTML = '';
-    chartContainer.appendChild(barCanvas);
 
     barCanvas.width = 900;
     barCanvas.height = 400;
@@ -378,19 +381,19 @@ function drawBarChart(data) {
         barCtx.font = '12px Arial';
         barCtx.fillText(key, legendX + 20, legendY + 12);
     });
-    chartContainer.appendChild(barCanvas)
+    addCanvasToChartContainer(barCanvas);
 }
 
 // Pie chart
 function drawPieChart(data) {
-        const pieCanvas = document.createElement('canvas');
-        pieCanvas.id = 'pie-chart';
-        pieCanvas.width = window.innerWidth - 100;
-        pieCanvas.height = window.innerHeight - 450;
+        const pieCanvas = createElement({
+            tag: 'canvas',
+            id: 'pie-chart',
+            width: window.innerWidth - 100,
+            height: window.innerHeight - 450
+        });
 
         const pieCtx = pieCanvas.getContext('2d');
-        chartContainer.innerHTML = ''
-        chartContainer.appendChild(pieCanvas);
 
         let keyId = 0;
 
@@ -458,9 +461,7 @@ function drawPieChart(data) {
             pieCtx.fillText(`Year: ${data[keyId]['Year']}`, pieCanvas.width / 3.5 - 50, 22);
         }
 
-        const nextYearButton = document.createElement('button');
-        nextYearButton.textContent = 'Next year';
-        nextYearButton.className = 'button-primary';
+        const nextYearButton = createElement({ tag:'button', textContent: 'Next year', className: 'button-primary' });
 
         nextYearButton.addEventListener('click', () => {
             keyId = (keyId + 1) % data.length;
@@ -468,7 +469,25 @@ function drawPieChart(data) {
         });
         updateChart();
 
+       addCanvasToChartContainer(pieCanvas);
         chartContainer.appendChild(nextYearButton);
-        chartContainer.appendChild(pieCanvas);
     }
+
+    // Export functions
+
+    const exportBtn = document.getElementById('export-btn');
+    exportBtn.addEventListener('click', () => {
+        const canvas = document.querySelector(`#${chosenChartType.toLowerCase()}-chart`);
+
+        if(canvas) {
+            const image = canvas.toDataURL('image/png', 1.0);
+
+            const link = document.createElement('a');
+            link.href = image;
+            link.download = 'graph.png';
+            link.click();
+        } else {
+            alert('No chart found to export');
+        }
+    });
 });

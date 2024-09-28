@@ -124,6 +124,21 @@ body {
 }
 
 
+form input {
+    background-image: none;
+    background-color: transparent;
+    box-shadow: none;
+    display: block;
+    width: 100%;
+    border: 1px solid #323A45;
+    box-sizing: border-box;
+    height: 50px;
+    margin-bottom: 0;
+    font-size: 16px;
+    line-height: 20px;
+    padding: 13px 15px 13px 13px;
+}
+
 /* Header  */
 
 header {
@@ -363,9 +378,18 @@ header {
     align-items: center; /* Vertically center items */
   }
 
+  .customization__form {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgb(0 0 0);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background-color: #fff;
+      padding: 1rem;
+  }
+
   .drag-drop-area {
-      width: 20rem;
-      height: 200px;
+      width: 30rem;
+      height: 320px;
       border: 2px dashed #ccc;
       border-radius: 5px;
       display: flex;
@@ -375,6 +399,13 @@ header {
       transition: background-color 0.3s ease;
       text-align: center;
       margin-right: 20px; 
+  }
+
+  .appropriate__types__title {
+      background-color: #3e4779;
+      color: #fff;
+      padding: 20px;
+      border-radius: 5px;
   }
 
   #json-output {
@@ -425,10 +456,20 @@ header {
     width: 100%;
     height: 100%;
     overflow-x: auto; /* Allows horizontal scrolling */
-    display: flex; /* Enables swiping */
-    justify-content: flex-start;
-    align-items: center;
+      display: flex;
+      justify-content: end;
+      align-items: start;
 }
+
+  .chart__container {
+      width: 100%;
+      height: 100%;
+      overflow-x: auto; /* Allows horizontal scrolling */
+      display: flex;
+      justify-content: end;
+      align-items: start;
+  }
+
 
     .file-item {
         margin-bottom: 10px;
