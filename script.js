@@ -33,6 +33,13 @@ window.addEventListener('DOMContentLoaded', () => {
         return element;
     }
 
+    function uploadDisplayData(data, file) {
+        uploadedData = data;
+        createDataPreviewTable(data);
+        console.log(data)
+        displayFile(file);
+    }
+
     // Drag & drop functionality
 
     ['dragenter', 'dragover', 'grapleave', 'drop'].forEach(eventName => {
@@ -119,12 +126,8 @@ window.addEventListener('DOMContentLoaded', () => {
                 try {
                     const jsonData = JSON.parse(e.target.result);
                     jsonOutput.textContent = JSON.stringify(jsonData, null, 2);
-                    uploadedData = jsonData;
-                    createDataPreviewTable(jsonData);
-                    displayFile(file);
+                    uploadDisplayData(jsonData, file);
                 } catch(error) {
-                    console.log(error);
-                    
                     jsonOutput.textContent = "Invalid JSON file";
                     alert('Invalid JSON file');
                 }
@@ -146,14 +149,11 @@ window.addEventListener('DOMContentLoaded', () => {
                 try {
                     const csvArray = csvToArr(e.target.result, ",");
                     jsonOutput.textContent = JSON.stringify(csvArray, null, 4);
-                    uploadedData = csvArray;
-                    createDataPreviewTable(csvArray);
-                    displayFile(file);
+                    uploadDisplayData(csvArray, file);
                 } catch (error) {
-                    console.log(error);
-
-                    jsonOutput.textContent = "Invalid CSV file";
-                    alert('Invalid CSV file');
+                    const errorMessage = `Invalid CSV file: ${error}`
+                    jsonOutput.textContent = errorMessage;
+                    alert(errorMessage);
                 }
             }
             reader.readAsText(file);
@@ -258,7 +258,6 @@ function drawLineChart(data) {
         const canvasHeight = 500; // Keep the height fixed, or you can adjust based on container
 
         const canvas = createElement({ tag: 'canvas', id: 'line-chart', width: canvasWidth, height: canvasHeight });
-
         const ctx = canvas.getContext('2d');
 
         // Dynamically calculate chart width, leaving space for the legend
