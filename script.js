@@ -25,11 +25,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
     function createElement ({tag, className, id, textContent, width, height }) {
         const element = document.createElement(tag);
-        element.id = id;
-        element.className = className;
-        element.textContent = textContent;
-        element.width = width;
-        element.height = height;
+        if(id) element.id = id;
+        if(className) element.className = className
+        if(textContent) element.textContent = textContent;
+        if (width) element.width = width ;
+        if(height) element.height = height;
         return element;
     }
 
