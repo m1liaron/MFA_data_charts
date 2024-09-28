@@ -197,6 +197,20 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function csvToArr(stringVal, splitter) {
+        const [keys, ...rest] = stringVal
+            .trim()
+            .split("\n")
+            .map((item) => item.split(splitter));
+
+        const formedArr = rest.map((item) => {
+            const object = {};
+            keys.forEach((key, index) => (object[key] = item.at(index)));
+            return object;
+        });
+        return formedArr;
+    }
+
     function validateXLSFile(file) {
         if(file) {
             const reader = new FileReader();
@@ -204,7 +218,6 @@ window.addEventListener('DOMContentLoaded', () => {
             reader.onload = function (e) {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' })
-                console.log(data)
 
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
@@ -218,20 +231,6 @@ window.addEventListener('DOMContentLoaded', () => {
         } else {
             showError('File is not exist');
         }
-    }
-
-    function csvToArr(stringVal, splitter) {
-        const [keys, ...rest] = stringVal
-            .trim()
-            .split("\n")
-            .map((item) => item.split(splitter));
-
-        const formedArr = rest.map((item) => {
-            const object = {};
-            keys.forEach((key, index) => (object[key] = item.at(index)));
-            return object;
-        });
-        return formedArr;
     }
 
     // Preview data table
@@ -295,6 +294,9 @@ dropdownButton.addEventListener('change', (e) => {
 generateChartBtn.addEventListener('click', () => drawChosenChart(chosenChartType));
 
 function drawChosenChart(chartType) {
+    if(!uploadedData || !uploadedData.length){
+        return showError('Export data to generate chart!');
+    }
     switch (chartType) {
         case 'Line':
             drawLineChart(uploadedData);
@@ -314,7 +316,8 @@ function drawChosenChart(chartType) {
 
 // line chart
 function drawLineChart(data) {
-        const containerWidth = window.innerWidth * 0.8; // Use 80% of the window width (or parent container width)
+        const containerWidth = window.innerWidth; // Use 80% of the window width (or parent container width)
+
         const canvasWidth = Math.max(containerWidth, 600); // Minimum width of 600px for smaller screens
         const canvasHeight = 500; // Keep the height fixed, or you can adjust based on container
 
@@ -327,8 +330,21 @@ function drawLineChart(data) {
         const chartHeight = canvas.height - 60; // Keep height consistent
         const padding = 30;
 
-        const fields = Object.keys(data[0]).filter(item => item !== 'Year');
-        const maxValue = Math.max(...data.flatMap(d => fields.map(field => d[field])));
+        const isNumeric = (value) => !isNaN(parseFloat(value)) && isFinite(value);
+
+        const fields = Object.keys(data[0]).filter(field => {
+            // Check if the value for this field in the first row is numeric
+            return data.some(row => isNumeric(row[field])) && field !== 'Year';
+        });
+
+        const maxValue = Math.max(
+            ...data.flatMap(d =>
+                fields.map(field => {
+                    const value = d[field];
+                    return isNumeric(value) ? parseFloat(value) : -Infinity; // Use -Infinity to exclude non-numeric values
+                })
+            )
+        );
 
         // Draw X and Y axis
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -346,13 +362,14 @@ function drawLineChart(data) {
             const y = canvas.height - padding - (i * (chartHeight / 5));
             const value = (stepSize * i).toFixed(0);
 
+
             ctx.fillStyle = '#000';
             ctx.font = '12px Arial';
             ctx.fillText(value, padding - 30, y + 5);
         }
 
         // Draw X-axis labels (years)
-        const years = data.map(d => d.Year);
+        const years = data.map(d => d['Year'] || d['year']);
         years.forEach((year, i) => {
             const x = padding + (i * (chartWidth / (data.length - 1))); // Adjust based on dynamic width
             const y = canvas.height - padding + 20;
