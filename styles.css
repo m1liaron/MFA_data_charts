@@ -31,12 +31,23 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--primary-blue);
 }
 
+canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.flex {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
 body {
     font-size: var(--body-font-size);
     line-height: var(--body-line-height);
     color: var(--black);
     margin: 0 auto;
-    max-width: 1280px;
 }
 
 .label {
@@ -335,11 +346,25 @@ header {
       padding: 40px;
   }
 
-  .visualization__container {
+.visualization__container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    box-sizing: border-box;
+    margin-bottom: 100px;
+}
+
+  .row-container {
+    display: flex; /* Use flexbox to align items in a row */
+    align-items: center; /* Vertically center items */
   }
 
   .drag-drop-area {
-      width: 400px;
+      width: 20rem;
       height: 200px;
       border: 2px dashed #ccc;
       border-radius: 5px;
@@ -349,6 +374,37 @@ header {
       cursor: pointer;
       transition: background-color 0.3s ease;
       text-align: center;
+      margin-right: 20px; 
+  }
+
+  #json-output {
+    white-space: pre-wrap; /* Preserve formatting */
+    max-width: 400px; /* Limit width for better display */
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ccc; /* Optional: add a border for distinction */
+    padding: 10px; /* Optional: add padding for better appearance */
+}
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  th, td {
+    border: 1px solid #000;
+    padding: 10px;
+  }
+
+  thead th {
+    background-color: #007bff;
+    color: white;
+  }
+
+  tbody th {
+    background-color: #f9f9f9;
   }
 
   .drag-drop-area:hover {
@@ -365,6 +421,14 @@ header {
       width: 400px;
   }
 
+  #chart-container {
+    width: 100%;
+    height: 100%;
+    overflow-x: auto; /* Allows horizontal scrolling */
+    display: flex; /* Enables swiping */
+    justify-content: flex-start;
+    align-items: center;
+}
 
     .file-item {
         margin-bottom: 10px;
@@ -383,3 +447,25 @@ header {
     .generate__charts__button {
         margin-top: 10px;
     }
+
+    /* visualization__container */
+
+.fields__list__container {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.field__Container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+
+.field__div {
+    width: 40px;
+    height: 10px;
+}
