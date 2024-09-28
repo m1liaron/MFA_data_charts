@@ -1,9 +1,9 @@
 window.addEventListener('DOMContentLoaded', () => {
     const dropArea = document.getElementById('drop-area');
     const fileInput = document.getElementById('file-input');
-    const fileList = document.getElementById('file-list');
     const jsonOutput = document.getElementById('json-output');
     const chartContainer = document.getElementById('chart__container');
+    const fileList = document.getElementById('file-list');
     const uploadedDataContainer = document.getElementById('uploaded-data-container');
     // Generation chart elements
     const dropdownButton = document.getElementById('dropdown-select');
@@ -26,12 +26,19 @@ window.addEventListener('DOMContentLoaded', () => {
 
     function createElement ({tag, className, id, textContent, width, height }) {
         const element = document.createElement(tag);
-        element.id = id;
-        element.className = className;
-        element.textContent = textContent;
-        element.width = width;
-        element.height = height;
+        if(id) element.id = id;
+        if(className) element.className = className
+        if(textContent) element.textContent = textContent;
+        if (width) element.width = width ;
+        if(height) element.height = height;
         return element;
+    }
+
+    function uploadDisplayData(data, file) {
+        uploadedData = data;
+        createDataPreviewTable(data);
+        console.log(data)
+        displayFile(file);
     }
 
     // Drag & drop functionality
@@ -79,29 +86,37 @@ window.addEventListener('DOMContentLoaded', () => {
     function handleFiles(files) {
         [...files].forEach(file  => {
             if(isFileTypeAllowed(file)){
-                getDataFileType(file, files);
+                validateDataFileType(file, files);
             } else {
                 alert(`File type not allowed: ${file.name}`);
             }
         });
     }
 
-    function getDataFileType(file, files) {
+    function validateDataFileType(file, files) {
         switch (file.type) {
             case 'application/json':
                 validateJsonFile(files);
+                break;
+            case 'text/csv':
+                validateCSVFile(files);
+                break;
+            default:
                 break;
         }
     }
 
     function displayFile(file) {
+        fileList.innerHTML = '';
         const fileItem = createElement({
             tag:'div',
             className:'file-item',
             textContent: `${file.name} (${Math.round(file.size / 1024 )})`
         });
-        uploadedDataContainer.insertAdjacentElement('afterend', fileItem);
+        fileList.appendChild(fileItem);
     }
+
+    // Functions to validate file
 
     function validateJsonFile(files) {
         const file = files[0];
@@ -113,12 +128,8 @@ window.addEventListener('DOMContentLoaded', () => {
                 try {
                     const jsonData = JSON.parse(e.target.result);
                     jsonOutput.textContent = JSON.stringify(jsonData, null, 2);
-                    uploadedData = jsonData;
-                    createDataPreviewTable(jsonData);
-                    displayFile(file);
+                    uploadDisplayData(jsonData, file);
                 } catch(error) {
-                    console.log(error);
-                    
                     jsonOutput.textContent = "Invalid JSON file";
                     alert('Invalid JSON file');
                 }
@@ -130,10 +141,46 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function validateCSVFile(files) {
+        const file = files[0];
+
+        if(file) {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                try {
+                    const csvArray = csvToArr(e.target.result, ",");
+                    jsonOutput.textContent = JSON.stringify(csvArray, null, 4);
+                    uploadDisplayData(csvArray, file);
+                } catch (error) {
+                    const errorMessage = `Invalid CSV file: ${error}`
+                    jsonOutput.textContent = errorMessage;
+                    alert(errorMessage);
+                }
+            }
+            reader.readAsText(file);
+        }
+    }
+
+    function csvToArr(stringVal, splitter) {
+        const [keys, ...rest] = stringVal
+            .trim()
+            .split("\n")
+            .map((item) => item.split(splitter));
+
+        const formedArr = rest.map((item) => {
+            const object = {};
+            keys.forEach((key, index) => (object[key] = item.at(index)));
+            return object;
+        });
+        return formedArr;
+    }
+
     // Preview data table
     const tablePlaceholder = document.getElementById("table-placeholder");
 
     function createDataPreviewTable(tableData) {
+        tablePlaceholder.innerHTML = '';
         const tableDiv= createElement({ tag:"table", id: "table" });
         tablePlaceholder.appendChild(tableDiv);
 
@@ -214,7 +261,6 @@ function drawLineChart(data) {
         const canvasHeight = 500; // Keep the height fixed, or you can adjust based on container
 
         const canvas = createElement({ tag: 'canvas', id: 'line-chart', width: canvasWidth, height: canvasHeight });
-
         const ctx = canvas.getContext('2d');
 
         // Dynamically calculate chart width, leaving space for the legend

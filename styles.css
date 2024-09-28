@@ -48,6 +48,7 @@ body {
     line-height: var(--body-line-height);
     color: var(--black);
     margin: 0 auto;
+    max-width: 1280px;
 }
 
 .label {
@@ -408,6 +409,43 @@ header {
       border-radius: 5px;
   }
 
+  .table__placeholder {
+      max-width: 1280px;
+      max-height: 600px;
+      overflow: auto;
+      /*border: 1px solid #ccc;*/
+      border-radius: 20px;
+      -webkit-box-shadow: 0px 0px 50px -7px var(--golden-accent);
+      -moz-box-shadow: 0px 0px 29px -7px var(--golden-accent);
+      box-shadow: 0px 0px 159px -7px var(--golden-accent);
+  }
+/* Custom scrollbar styles */
+
+.table__placeholder::-webkit-scrollbar {
+    width: 20px; /* Width of the scrollbar */
+}
+
+/* Track */
+.table__placeholder::-webkit-scrollbar-track {
+    background: var(--gray-background); /* Background for the scrollbar track */
+}
+
+/* Handle */
+.table__placeholder::-webkit-scrollbar-thumb {
+    background: var(--primary-blue); /* Color for the scrollbar handle */
+    border-radius: 6px; /* Rounded corners for the handle */
+}
+
+/* Handle on hover */
+.table__placeholder::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-blue); /* Color for the scrollbar handle on hover */
+}
+
+/* Optional: Add a border to the scrollbar handle */
+.table__placeholder::-webkit-scrollbar-thumb {
+    border: 2px solid var(--gray-background); /* Border color for the handle */
+}
+
   #json-output {
     white-space: pre-wrap; /* Preserve formatting */
     max-width: 400px; /* Limit width for better display */
@@ -422,6 +460,8 @@ header {
     width: 100%;
     text-align: center;
     margin-top: 20px;
+    max-height: 400px;
+    overflow-y: auto;
   }
 
   th, td {
@@ -430,8 +470,8 @@ header {
   }
 
   thead th {
-    background-color: #007bff;
-    color: white;
+    background-color: var(--primary-blue);
+    color: var(--white);
   }
 
   tbody th {
@@ -443,7 +483,7 @@ header {
   }
 
   .drag-drop-area.active {
-      border-color: #00aaff;
+      border-color: var(--primary-blue);
       background-color: #e6f7ff;
   }
 
