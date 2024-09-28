@@ -34,47 +34,37 @@
     </header>
 
     <main>
-        <section class="visualization__container">
+        <section class="visualization__container" id="main-container">
             <div class="row-container" id="uploaded-data-container">
                 <div class="drag-drop-area" id="drop-area">
                     <h3>Drag and drop files here or click to upload</h3>
                     <input type="file" id="file-input" multiple hidden/>
                 </div>
                 <pre id="json-output"></pre>
+                <textarea id="manual-data-entry" name="story" rows="5" cols="33" placeholder="Write entry data here, in json"> </textarea>
             </div>
+            <h4 class="appropriate__types__title">Appropriate types of files: CSV, Excel, JSON</h4>
 
 
             <div class="table__placeholder" id="table-placeholder"></div>
 
-            <textarea id="manual-data-entry" name="story" rows="5" cols="33"> </textarea>
-            <h4>Appropriate types of files: CSV, Excel, JSON</h4>
+            <div class="flex">
+                <select class="button-primary" id="dropdown-select">
+                    <option value="Line">Line chart</option>
+                    <option value="Bar">Bar chart</option>
+                    <option value="Pie">Pie chart</option>
+                </select>
 
-            <div class="dropdown">
-              <button class="button-primary" id="dropdown-button">Charts</button>
-              <div id="dropdown-menu" class="charts__dropdown__container hide">
-                <button id="btn__chart__line" class="button-primary">Line chart</button>
-                <button id="btn__chart__bar" class="button-primary">Bar chart</button>
-                <button id="btn__chart__pie" class="button-primary">Pie chart</button>
-              </div>
+                <button class="button-secondary generate__charts__button" id="generate-chart-btn">Generate chart</button>
             </div>
-
-            <button class="button-secondary generate__charts__button">Generate chart</button>
 
             <div id="file-list"></div>
         </section>
         <section class="visualization__container">
-            <div id="chart__container">
-                <!--            <canvas id="visualization__chart" width="600" height="400"></canvas>-->
-                <!--                <canvas id="bar-chart" class="bar__chart__canvas" width="600" height="400"></canvas>-->
-
-<!--                <div class="flex">-->
-<!--                    <canvas id="pie-chart" class="bar__chart__canvas" width="600" height="400"></canvas>-->
-<!--                    <div class="legend" id="legend"></div>-->
-<!--                </div>-->
-            </div>
+            <div id="chart__container" class="chart__container"></div>
 
             <div class="customization__container">
-                <form>
+                <form class="customization__form">
                     <input type="text" placeholder="Graph title" />
                     <input type="text" placeholder="Captions for the X and Y axes." />
                     <input type="text" placeholder="Graph title" />
