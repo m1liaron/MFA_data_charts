@@ -146,7 +146,7 @@ form input {
 
 /* Error */
 
-.material-symbols-outlined {
+.error-icon {
     font-weight: bold;
     color:#ff0000
 }
