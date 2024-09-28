@@ -1,7 +1,6 @@
 window.addEventListener('DOMContentLoaded', () => {
     const dropArea = document.getElementById('drop-area');
     const fileInput = document.getElementById('file-input');
-    const fileList = document.getElementById('file-list');
     const jsonOutput = document.getElementById('json-output');
     const chartContainer = document.getElementById('chart__container');
     const uploadedDataContainer = document.getElementById('uploaded-data-container');
@@ -79,17 +78,22 @@ window.addEventListener('DOMContentLoaded', () => {
     function handleFiles(files) {
         [...files].forEach(file  => {
             if(isFileTypeAllowed(file)){
-                getDataFileType(file, files);
+                validateDataFileType(file, files);
             } else {
                 alert(`File type not allowed: ${file.name}`);
             }
         });
     }
 
-    function getDataFileType(file, files) {
+    function validateDataFileType(file, files) {
         switch (file.type) {
             case 'application/json':
                 validateJsonFile(files);
+                break;
+            case 'text/csv':
+                validateCSVFile(files);
+                break;
+            default:
                 break;
         }
     }
@@ -102,6 +106,8 @@ window.addEventListener('DOMContentLoaded', () => {
         });
         uploadedDataContainer.insertAdjacentElement('afterend', fileItem);
     }
+
+    // Functions to validate file
 
     function validateJsonFile(files) {
         const file = files[0];
@@ -128,6 +134,44 @@ window.addEventListener('DOMContentLoaded', () => {
         } else {
             jsonOutput.textContent = "Please upload a valid JSON file";
         }
+    }
+
+    function validateCSVFile(files) {
+        const file = files[0];
+
+        if(file) {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                try {
+                    const csvArray = csvToArr(e.target.result, ",");
+                    jsonOutput.textContent = JSON.stringify(csvArray, null, 4);
+                    uploadedData = csvArray;
+                    createDataPreviewTable(csvArray);
+                    displayFile(file);
+                } catch (error) {
+                    console.log(error);
+
+                    jsonOutput.textContent = "Invalid CSV file";
+                    alert('Invalid CSV file');
+                }
+            }
+            reader.readAsText(file);
+        }
+    }
+
+    function csvToArr(stringVal, splitter) {
+        const [keys, ...rest] = stringVal
+            .trim()
+            .split("\n")
+            .map((item) => item.split(splitter));
+
+        const formedArr = rest.map((item) => {
+            const object = {};
+            keys.forEach((key, index) => (object[key] = item.at(index)));
+            return object;
+        });
+        return formedArr;
     }
 
     // Preview data table
