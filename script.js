@@ -3,6 +3,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('file-input');
     const jsonOutput = document.getElementById('json-output');
     const chartContainer = document.getElementById('chart__container');
+    const fileList = document.getElementById('file-list');
     const uploadedDataContainer = document.getElementById('uploaded-data-container');
     // Generation chart elements
     const dropdownButton = document.getElementById('dropdown-select');
@@ -106,12 +107,13 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayFile(file) {
+        fileList.innerHTML = '';
         const fileItem = createElement({
             tag:'div',
             className:'file-item',
             textContent: `${file.name} (${Math.round(file.size / 1024 )})`
         });
-        uploadedDataContainer.insertAdjacentElement('afterend', fileItem);
+        fileList.appendChild(fileItem);
     }
 
     // Functions to validate file
@@ -178,6 +180,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const tablePlaceholder = document.getElementById("table-placeholder");
 
     function createDataPreviewTable(tableData) {
+        tablePlaceholder.innerHTML = '';
         const tableDiv= createElement({ tag:"table", id: "table" });
         tablePlaceholder.appendChild(tableDiv);
 
