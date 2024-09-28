@@ -4,7 +4,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const jsonOutput = document.getElementById('json-output');
     const chartContainer = document.getElementById('chart__container');
     const fileList = document.getElementById('file-list');
-    const uploadedDataContainer = document.getElementById('uploaded-data-container');
     // Generation chart elements
     const dropdownButton = document.getElementById('dropdown-select');
     const generateChartBtn = document.getElementById('generate-chart-btn');
@@ -40,6 +39,41 @@ window.addEventListener('DOMContentLoaded', () => {
         console.log(data)
         displayFile(file);
     }
+
+    // Show & hide ⭕Error⭕
+
+    const errorCard = document.querySelector('.error-card');
+    const messageText = errorCard.querySelector('.message-text');
+    const subText = errorCard.querySelector('.sub-text');
+    const closeBtn = document.querySelector('#close-btn');
+
+    const showError = (title = '', message = '') => {
+        messageText.textContent = title;
+        subText.textContent = message;
+
+        // Show the error card with the 'show' class
+        errorCard.classList.add('show');
+        errorCard.classList.remove('hide');
+        errorCard.style.display = 'flex';
+
+        // Auto-hide the error card after 5 seconds
+        setTimeout(() => {
+            hideError();
+        }, 5000);
+    };
+
+    const hideError = () => {
+        // Add the 'hide' class to start the transition
+        errorCard.classList.add('hide');
+        errorCard.classList.remove('show');
+
+        // Once the transition ends, set display to 'none'
+        errorCard.addEventListener('transitionend', () => {
+            errorCard.style.display = 'none';
+        }, { once: true }); // Ensures the event listener is triggered only once
+    };
+
+    closeBtn.addEventListener('click', hideError);
 
     // Drag & drop functionality
 
@@ -88,7 +122,7 @@ window.addEventListener('DOMContentLoaded', () => {
             if(isFileTypeAllowed(file)){
                 validateDataFileType(file, files);
             } else {
-                alert(`File type not allowed: ${file.name}`);
+                showError('Error type', `Type is not allowed: : ${file.name}`)
             }
         });
     }
@@ -131,7 +165,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     uploadDisplayData(jsonData, file);
                 } catch(error) {
                     jsonOutput.textContent = "Invalid JSON file";
-                    alert('Invalid JSON file');
+                    showError('Invalid JSON file', '');
                 }
             };
 
