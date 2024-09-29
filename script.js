@@ -467,7 +467,6 @@ function drawBarChart(data) {
     const labels = data.map(item => item.Year); // years
 
     const dataSeries = keys.map(key => data.map(item => item[key]));
-    console.log(dataSeries)
 
     // Create canvas
     const barCanvas = createElement({ tag:'canvas', id: 'bar-chart' });
