@@ -316,42 +316,75 @@ function drawChosenChart(chartType) {
 
 // line chart
 function drawLineChart(data) {
-        const containerWidth = window.innerWidth; // Use 80% of the window width (or parent container width)
+    let scale = 1;
+    let offsetX = 0;
+    let offsetY = 0;
+    let isDragging = false;
+    let dragStartX, dragStartY;
 
-        const canvasWidth = Math.max(containerWidth, 600); // Minimum width of 600px for smaller screens
-        const canvasHeight = 500; // Keep the height fixed, or you can adjust based on container
+    const containerWidth = window.innerWidth;
+    const canvasWidth = Math.max(containerWidth, 600); // Minimum width of 600px for smaller screens
+    const canvasHeight = 1200; // Keep the height fixed, or you can adjust based on container
 
-        const canvas = createElement({ tag: 'canvas', id: 'line-chart', width: canvasWidth, height: canvasHeight });
-        const ctx = canvas.getContext('2d');
+    const canvas = createElement({tag: 'canvas', id: 'line-chart', width: canvasWidth, height: canvasHeight});
+    const ctx = canvas.getContext('2d');
 
-        // Dynamically calculate chart width, leaving space for the legend
-        const legendWidth = 160; // Fixed width for the legend section
-        const chartWidth = canvas.width - legendWidth - 60; // Chart width based on canvas size
-        const chartHeight = canvas.height - 60; // Keep height consistent
-        const padding = 30;
+    // Dynamically calculate chart width, leaving space for the legend
+    const legendWidth = 160; // Fixed width for the legend section
+    const chartHeight = canvas.height - 60; // Keep height consistent
+    const padding = 30;
 
-        const isNumeric = (value) => !isNaN(parseFloat(value)) && isFinite(value);
+    const isNumeric = (value) => !isNaN(parseFloat(value)) && isFinite(value);
 
-        const fields = Object.keys(data[0]).filter(field => {
-            // Check if the value for this field in the first row is numeric
-            return data.some(row => isNumeric(row[field])) && field !== 'Year';
-        });
+    const fields = Object.keys(data[0]).filter(field => data.some(row => isNumeric(row[field])) && field !== 'Year');
 
-        const maxValue = Math.max(
-            ...data.flatMap(d =>
-                fields.map(field => {
-                    const value = d[field];
-                    return isNumeric(value) ? parseFloat(value) : -Infinity; // Use -Infinity to exclude non-numeric values
-                })
-            )
-        );
+    const maxValue = Math.max(
+        ...data.flatMap(d =>
+            fields.map(field => {
+                const value = d[field];
+                return isNumeric(value) ? parseFloat(value) : -Infinity; // Use -Infinity to exclude non-numeric values
+            })
+        )
+    );
 
-        // Draw X and Y axis
+    canvas.addEventListener('wheel', function(event) {
+       const zoomAmount = event.deltaY * -0.001;
+       scale = Math.min(Math.max(0.5, scale + zoomAmount), 5);
+       draw();
+    });
+
+    canvas.addEventListener('mousedown', function(event) {
+        isDragging = true;
+        dragStartX = event.offsetX - offsetX;
+        dragStartY = event.offsetY - offsetY;
+    });
+
+    canvas.addEventListener('mousemove', function(event) {
+        if(isDragging) {
+            offsetX = event.offsetX - dragStartX;
+            offsetY = event.offsetY - dragStartY;
+            draw();
+        }
+    })
+
+    canvas.addEventListener('mouseup', function() {
+        isDragging = false;
+    });
+
+    canvas.addEventListener('mouseleave', function() {
+        isDragging = false;
+    })
+
+    function draw() {
+        const chartWidth = (canvas.width - legendWidth - 60) * scale;
+        const years = data.map(d => d['Year'] || d['year']);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw X and Y axes
         ctx.beginPath();
-        ctx.moveTo(padding, padding);
-        ctx.lineTo(padding, canvas.height - padding);
-        ctx.lineTo(chartWidth + padding, canvas.height - padding); // Adapt chart width
+        ctx.moveTo(padding + offsetX, padding + offsetY);
+        ctx.lineTo(padding + offsetX, canvas.height - padding + offsetY);
+        ctx.lineTo(chartWidth + padding + offsetX, canvas.height - padding + offsetY);
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 3;
         ctx.stroke();
@@ -359,21 +392,17 @@ function drawLineChart(data) {
         // Draw Y axis values
         const stepSize = maxValue / 5;
         for (let i = 0; i <= 5; i++) {
-            const y = canvas.height - padding - (i * (chartHeight / 5));
+            const y = canvas.height - padding - (i * (chartHeight / 5)) + offsetY;
             const value = (stepSize * i).toFixed(0);
-
-
             ctx.fillStyle = '#000';
             ctx.font = '12px Arial';
-            ctx.fillText(value, padding - 30, y + 5);
+            ctx.fillText(value, padding - 30 + offsetX, y + 5);
         }
 
         // Draw X-axis labels (years)
-        const years = data.map(d => d['Year'] || d['year']);
         years.forEach((year, i) => {
-            const x = padding + (i * (chartWidth / (data.length - 1))); // Adjust based on dynamic width
-            const y = canvas.height - padding + 20;
-
+            const x = padding + (i * (chartWidth / (data.length - 1))) + offsetX;
+            const y = canvas.height - padding + 20 + offsetY;
             ctx.fillStyle = '#000';
             ctx.font = '12px Arial';
             ctx.fillText(year, x - 15, y);
@@ -387,41 +416,35 @@ function drawLineChart(data) {
             ctx.beginPath();
 
             data.forEach((point, i) => {
-                const x = padding + (i * (chartWidth / (data.length - 1)));
-                const y = canvas.height - padding - (point[field] / maxValue) * chartHeight;
-
+                const x = padding + (i * (chartWidth / (data.length - 1))) + offsetX;
+                const y = canvas.height - padding - (point[field] / maxValue) * chartHeight + offsetY;
                 if (i === 0) {
                     ctx.moveTo(x, y);
                 } else {
                     ctx.lineTo(x, y);
                 }
-
                 // Draw small circles for data points
                 ctx.arc(x, y, 4, 0, 2 * Math.PI);
             });
             ctx.stroke();
         });
 
-        // Draw fields (legend) on the right side of the canvas
-        const legendX = chartWidth + 80;  // Shift legend to the right
-        let legendY = 50;
-
+        // Draw legend
+        const legendX = chartWidth + 80 + offsetX;
+        let legendY = 50 + offsetY;
         fields.forEach((field, index) => {
             const color = getColor(index);
-
-            // Draw the colored box
             ctx.fillStyle = color;
             ctx.fillRect(legendX, legendY, 20, 20);
-
-            // Draw the field name next to the box
             ctx.fillStyle = '#000';
             ctx.font = '16px Arial';
             ctx.fillText(field, legendX + 30, legendY + 15);
-
-            legendY += 30;  // Move down for the next field
+            legendY += 30;
         });
+    }
 
-        addCanvasToChartContainer(canvas);
+    draw();
+    addCanvasToChartContainer(canvas);
 }
 
 // bar chart
