@@ -479,6 +479,8 @@ header {
     align-items: center; /* Vertically center items */
   }
 
+  /* Customization Section */
+
   .customization__form {
       box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgb(0 0 0);
       display: flex;
@@ -487,6 +489,40 @@ header {
       background-color: #fff;
       padding: 1rem;
   }
+
+  .fieldModal {
+      position: relative;
+      top: 0;
+      left: 0;
+      flex: 1;
+  }
+
+  .field__axis__container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 10px;
+      gap: 5px;
+  }
+
+  .field__axis {
+      padding: 5px;
+      border: 1px solid #bdbdbd;
+      flex: 1;
+  }
+
+  .remove_field_icon {
+      font-weight: bold;
+      color: #ffffff;
+      padding: 5px;
+      background-color: red;
+  }
+
+  .remove_field_icon:hover {
+      background-color: #a40000;
+      transition: 0.1s;
+  }
+
 
   .drag-drop-area {
       width: 30rem;

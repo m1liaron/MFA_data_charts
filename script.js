@@ -7,6 +7,11 @@ window.addEventListener('DOMContentLoaded', () => {
     // Generation chart elements
     const dropdownButton = document.getElementById('dropdown-select');
     const generateChartBtn = document.getElementById('generate-chart-btn');
+    // customization panel
+    const xCaptionContainer = document.getElementById('x-caption-container');
+    const yCaptionContainer = document.getElementById('y-caption-container');
+    const selectXField = document.getElementById('select-x-field');
+    const selectYField = document.getElementById('select-y-field');
 
     let uploadedData;
     let chosenChartType = 'Line';
@@ -265,7 +270,7 @@ window.addEventListener('DOMContentLoaded', () => {
             const tr = createElement({ tag: 'tr' });
             const th = createElement({ tag: 'th', textContent: rowIndex + 1 });
             tr.appendChild(th);
-            
+
             Object.values(rowData).forEach((value) => {
                 const td = createElement({ tag: 'td', textContent: value });
                 tr.appendChild(td);
@@ -273,7 +278,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
             columnContainer.appendChild(tr);
         });
-        
+
         columnContainer.appendChild(tr);
         table.appendChild(columnContainer);
     }
@@ -626,6 +631,34 @@ function drawPieChart(data) {
 
        addCanvasToChartContainer(pieCanvas);
         chartContainer.appendChild(nextYearButton);
+    }
+
+    // Customization panel functions ✒️
+
+    selectXField.addEventListener('click', showXFieldModal);
+
+    function showXFieldModal() {
+        if(uploadedData && uploadedData.length > 0) {
+            const fields = uploadedData[0];
+            const modal = createFieldModal(fields);
+            xCaptionContainer.appendChild(modal);
+        }
+     }
+
+    function createFieldModal(fields) {
+        const modalContainer= createElement({tag: 'div', className: 'fieldModal'});
+
+        for(let key in fields) {
+            const fieldContainer = createElement({ tag: 'div', className: 'field__axis__container' });
+            const fieldElement = createElement({tag: 'span', className: 'field__axis', textContent: `${key}:${fields[key]}`});
+            const closeIcon = createElement({tag: 'span', className: 'material-symbols-outlined remove_field_icon', textContent: 'close'});
+
+            fieldContainer.appendChild(fieldElement);
+            fieldContainer.appendChild(closeIcon);
+            modalContainer.appendChild(fieldContainer);
+        }
+
+        return modalContainer;
     }
 
     // Export functions
