@@ -39,6 +39,8 @@ window.addEventListener('DOMContentLoaded', () => {
         displayFile(file);
     }
 
+    const isNumeric = (value) => !isNaN(parseFloat(value)) && isFinite(value);
+
     // Show & hide ⭕Error⭕
 
     const errorCard = document.querySelector('.error-card');
@@ -450,11 +452,22 @@ function drawLineChart(data) {
 // bar chart
 function drawBarChart(data) {
     // Get all keys (excluding 'Year') for the data series
-    const keys = Object.keys(data[0]).filter(key => key !== 'Year')
-    const labels = data.map(item => item.Year);
+    const fields = Object.keys(data[0]).filter(field => data.some(row => isNumeric(row[field])) && field !== 'Year');
+
+    const maxValue = Math.max(
+        ...data.flatMap(d =>
+            fields.map(field => {
+                const value = d[field];
+                return isNumeric(value) ? parseFloat(value) : -Infinity; // Use -Infinity to exclude non-numeric values
+            })
+        )
+    );
+
+    const keys = Object.keys(data[0]).filter(key => key !== 'Year') // numbers
+    const labels = data.map(item => item.Year); // years
 
     const dataSeries = keys.map(key => data.map(item => item[key]));
-    const maxValue = Math.max(...dataSeries.flat());
+    console.log(dataSeries)
 
     // Create canvas
     const barCanvas = createElement({ tag:'canvas', id: 'bar-chart' });
@@ -488,8 +501,8 @@ function drawBarChart(data) {
             const value = dataSeries[j][i];
             const x = barPadding + i * (barWidth + 40) + j * (barWidth / keys.length + seriedPadding);
             const y = barCanvas.height - barPadding - (value / maxValue) * barChartHeight
-        
-        
+
+
             barCtx.fillStyle = getColor(j);
             barCtx.fillRect(x, y, barWidth / keys.length, (value / maxValue) * barChartHeight);
         });
