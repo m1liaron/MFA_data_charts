@@ -553,20 +553,10 @@ function drawPieChart(data) {
 
         let keyId = 0;
 
-        const buttonX = pieCanvas.width - 200;
-        const buttonY = 50;
-        const buttonWidth = 150;
-        const buttonHeight = 40;
-
-        function isButtonClicked(x, y) {
-            return x >= buttonX && x <= buttonX + buttonWidth &&
-                   y >= buttonY && y <= buttonY + buttonHeight;
-        }
-
         function updateChart() {
             pieCtx.clearRect(0, 0, pieCanvas.width, pieCanvas.height);
 
-            const keys = Object.keys(data[keyId]).filter(key => key !== 'Year');
+            const keys = Object.keys(data[0]).filter(field => data.some(row => isNumeric(row[field])) && field !== 'Year');
             const total = keys.reduce((sum, key) => sum + data[keyId][key], 0);
 
             const radius = pieCanvas.height / 2 - 20
