@@ -14,13 +14,15 @@ window.addEventListener('DOMContentLoaded', () => {
     const selectYField = document.getElementById('select-y-field');
     const fieldXModal = document.getElementById('field-x-modal');
     const fieldYModal = document.getElementById('field-y-modal');
+    const xCaptionsContainer = document.getElementById('x-captions-container');
+    const yCaptionsContainer = document.getElementById('y-captions-container');
     // Export section
     const exportBtn = document.getElementById('export-btn');
 
     let uploadedData;
     let chosenChartType = 'Line';
-    let xFields = [];
-    let yFields = [];
+    let xFields = new Set();
+    let yFields = new Set();
 
     // Common functions
 
@@ -654,7 +656,7 @@ function drawPieChart(data) {
 
             if (!xFieldModalContent) {
                 const fields = uploadedData[0];
-                xFieldModalContent = createFieldModal(fields);
+                xFieldModalContent = createFieldModal(fields, 'x');
                 fieldXModal.appendChild(xFieldModalContent);
             }
                 fieldXModal.classList.toggle('hide');
@@ -668,23 +670,57 @@ function drawPieChart(data) {
             }
 
             if (!yFieldModalContent) {
-                yFieldModalContent = createFieldModal(uploadedData[0]);
+                yFieldModalContent = createFieldModal(uploadedData[0], 'y');
                 fieldYModal.appendChild(yFieldModalContent);
             }
             fieldYModal.classList.toggle('hide');
         }
     }
 
-    function createFieldModal(fields) {
+    function createFieldModal(fields, axis) {
         const fieldsContainer = createElement({ tag: 'div', className: 'fields__axis__container' });
         for(let key in fields) {
             const fieldContainer = createElement({ tag: 'div', className: 'field__axis__container' });
             const fieldElement = createElement({tag: 'span', className: 'field__axis', textContent: `${key}:${fields[key]}`});
 
+            fieldContainer.addEventListener('click', () => {
+                if(axis === 'x') {
+                    addXField(key)
+                } else {
+                    addYField(key)
+                }
+            });
+
             fieldContainer.appendChild(fieldElement);
             fieldsContainer.appendChild(fieldContainer);
         }
         return fieldsContainer
+    }
+
+    function addYField(fieldKey) {
+        const fieldItem = createElement({ tag: 'div', className: 'field__axis__container' });
+        const fieldItemText = createElement({ tag: 'p', textContent: fieldKey });
+        const removeFieldIcon = createElement({tag: 'span', className: 'material-symbols-outlined remove_field_icon'});
+        fieldItem.appendChild(fieldItemText);
+        fieldItem.appendChild(removeFieldIcon);
+
+
+        yFields.add(fieldKey);
+
+        yCaptionsContainer.appendChild(fieldItem);
+    }
+
+    function addXField(fieldKey) {
+        const fieldItem = createElement({tag: 'div', className: 'field__axis__container' });
+        const fieldItemText = createElement({tag: 'p', textContent: fieldKey });
+        const removeFieldIcon = createElement({tag: 'span', className: 'material-symbols-outlined remove_field_icon'});
+
+        fieldItem.appendChild(fieldItemText);
+        fieldItem.appendChild(removeFieldIcon);
+
+        xFields.add(fieldKey);
+
+        xCaptionContainer.appendChild(fieldItem);
     }
 
     // Export functions
