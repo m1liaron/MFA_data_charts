@@ -490,11 +490,44 @@ header {
       padding: 1rem;
   }
 
-  .fieldModal {
-      position: relative;
-      top: 0;
-      left: 0;
-      flex: 1;
+/* General styles for the modal */
+.fieldModal {
+    position: absolute; /* Position it relative to its closest positioned ancestor */
+    background-color: white; /* White background for contrast */
+    border: 1px solid #ccc; /* Light gray border */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+    border-radius: 8px; /* Rounded corners */
+    padding: 16px; /* Padding inside the modal */
+    z-index: 1000; /* Make sure it appears above other elements */
+    width: 300px; /* Set a fixed width */
+    max-height: 400px; /* Set a max height for the modal */
+    overflow-y: auto; /* Allow scrolling if content overflows */
+}
+
+/* Positioning the modal slightly to the right */
+.fieldModal.show {
+    display: block; /* Show the modal when the 'show' class is added */
+}
+
+/* Optional: Style for modal animations */
+.fieldModal {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* When the modal is visible, add an animation */
+.fieldModal.show {
+    opacity: 1; /* Fully visible */
+    transform: translateX(10px); /* Move slightly to the right */
+}
+
+/* Additional styling for the modal's content, like buttons or lists */
+.fieldModal .modal-content {
+    margin-top: 10px; /* Add space between modal header and content */
+}
+
+  .fields__axis__container {
+      display: flex;
+      flex-direction: column;
   }
 
   .field__axis__container {

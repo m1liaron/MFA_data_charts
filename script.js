@@ -12,9 +12,15 @@ window.addEventListener('DOMContentLoaded', () => {
     const yCaptionContainer = document.getElementById('y-caption-container');
     const selectXField = document.getElementById('select-x-field');
     const selectYField = document.getElementById('select-y-field');
+    const fieldXModal = document.getElementById('field-x-modal');
+    const fieldYModal = document.getElementById('field-y-modal');
+    // Export section
+    const exportBtn = document.getElementById('export-btn');
 
     let uploadedData;
     let chosenChartType = 'Line';
+    let xFields = [];
+    let yFields = [];
 
     // Common functions
 
@@ -634,36 +640,55 @@ function drawPieChart(data) {
     }
 
     // Customization panel functions ✒️
-
     selectXField.addEventListener('click', showXFieldModal);
+    selectYField.addEventListener('click', showYFieldModal);
+
+    let xFieldModalContent = null;
+    let yFieldModalContent = null;
 
     function showXFieldModal() {
-        if(uploadedData && uploadedData.length > 0) {
-            const fields = uploadedData[0];
-            const modal = createFieldModal(fields);
-            xCaptionContainer.appendChild(modal);
+        if (uploadedData && uploadedData.length > 0) {
+            if(!fieldYModal.classList.contains('hide')){
+                fieldYModal.classList.toggle('hide');
+            }
+
+            if (!xFieldModalContent) {
+                const fields = uploadedData[0];
+                xFieldModalContent = createFieldModal(fields);
+                fieldXModal.appendChild(xFieldModalContent);
+            }
+                fieldXModal.classList.toggle('hide');
         }
-     }
+    }
+
+    function showYFieldModal() {
+        if (uploadedData && uploadedData.length > 0) {
+            if(!fieldXModal.classList.contains('hide')){
+                fieldXModal.classList.toggle('hide');
+            }
+
+            if (!yFieldModalContent) {
+                yFieldModalContent = createFieldModal(uploadedData[0]);
+                fieldYModal.appendChild(yFieldModalContent);
+            }
+            fieldYModal.classList.toggle('hide');
+        }
+    }
 
     function createFieldModal(fields) {
-        const modalContainer= createElement({tag: 'div', className: 'fieldModal'});
-
+        const fieldsContainer = createElement({ tag: 'div', className: 'fields__axis__container' });
         for(let key in fields) {
             const fieldContainer = createElement({ tag: 'div', className: 'field__axis__container' });
             const fieldElement = createElement({tag: 'span', className: 'field__axis', textContent: `${key}:${fields[key]}`});
-            const closeIcon = createElement({tag: 'span', className: 'material-symbols-outlined remove_field_icon', textContent: 'close'});
 
             fieldContainer.appendChild(fieldElement);
-            fieldContainer.appendChild(closeIcon);
-            modalContainer.appendChild(fieldContainer);
+            fieldsContainer.appendChild(fieldContainer);
         }
-
-        return modalContainer;
+        return fieldsContainer
     }
 
     // Export functions
 
-    const exportBtn = document.getElementById('export-btn');
     exportBtn.addEventListener('click', () => {
         const canvas = document.querySelector(`#${chosenChartType.toLowerCase()}-chart`);
 
