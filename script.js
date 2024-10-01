@@ -368,9 +368,8 @@ function drawLineChart(propsData) {
 
     const isNumeric = (value) => !isNaN(parseFloat(value)) && isFinite(value);
 
-    const fields = [...xFields];
-    const values = [...yFields];
-    console.log(fields)
+    const fields = [...yFields];
+    const values = [...xFields];
 
     const maxValue = Math.max(
         ...data.flatMap(d =>
@@ -432,12 +431,16 @@ function drawLineChart(propsData) {
         }
 
         // Draw X-axis labels (years)
-        values.forEach((year, i) => {
-            const x = padding + (i * (chartWidth / (data.length - 1))) + offsetX;
-            const y = canvas.height - padding + 20 + offsetY;
-            ctx.fillStyle = '#000';
-            ctx.font = '12px Arial';
-            ctx.fillText(year, x - 15, y);
+        values.forEach((year) => {
+            data.forEach((item, index) => {
+                const value = item[year];
+
+                const x = padding + (index * (chartWidth / (data.length - 1))) + offsetX;
+                const y = canvas.height - padding + 20 + offsetY;
+                ctx.fillStyle = '#000';
+                ctx.font = '12px Arial';
+                ctx.fillText(value, x - 15, y);
+            })
         });
 
         // Draw lines for each field
@@ -482,8 +485,11 @@ function drawLineChart(propsData) {
 // bar chart
 function drawBarChart(data) {
     // Get all keys (excluding 'Year') for the data series
-    const fields = Object.keys(data[0]).filter(field => data.some(row => isNumeric(row[field])) && field !== 'Year');
+    const fields = Object.keys(data[0]).filter(field => data.some(row => isNumeric(row[field])) && field !== 'Year'); // all keys without year
+    const keys = Object.keys(data[0]).filter(key => key !== 'Year') // Array of keys with value number
+    const labels = data.map(item => item.Year); // All years
 
+    const dataSeries = keys.map(key => data.map(item => item[key]));
     const maxValue = Math.max(
         ...data.flatMap(d =>
             fields.map(field => {
@@ -492,11 +498,6 @@ function drawBarChart(data) {
             })
         )
     );
-
-    const keys = Object.keys(data[0]).filter(key => key !== 'Year') // numbers
-    const labels = data.map(item => item.Year); // years
-
-    const dataSeries = keys.map(key => data.map(item => item[key]));
 
     // Create canvas
     const barCanvas = createElement({ tag:'canvas', id: 'bar-chart' });
@@ -532,6 +533,7 @@ function drawBarChart(data) {
             const y = barCanvas.height - barPadding - (value / maxValue) * barChartHeight
 
 
+            console.log('value:', value)
             barCtx.fillStyle = getColor(j);
             barCtx.fillRect(x, y, barWidth / keys.length, (value / maxValue) * barChartHeight);
         });
