@@ -23,7 +23,7 @@ window.addEventListener('DOMContentLoaded', () => {
     let chosenChartType = 'Line';
     let xFields = new Set();
     let yFields = new Set();
-    let rangeOfData = 1;
+    let rangeOfData = 0;
 
     // Common functions
 
@@ -346,7 +346,7 @@ function drawLineChart(propsData) {
     if(rangeOfData) {
         data = propsData.slice(0, rangeOfData);
     } else {
-        data = propsData;
+        data = propsData
     }
     let scale = 1;
     let offsetX = 0;
@@ -370,6 +370,7 @@ function drawLineChart(propsData) {
 
     const fields = [...xFields];
     const values = [...yFields];
+    console.log(fields)
 
     const maxValue = Math.max(
         ...data.flatMap(d =>
@@ -432,17 +433,11 @@ function drawLineChart(propsData) {
 
         // Draw X-axis labels (years)
         values.forEach((year, i) => {
-            data.forEach((item, index) => {
-               const value = item[year];
-
-                const x = padding + (index * (chartWidth / (data.length - 1))) + offsetX;
-                const y = canvas.height - padding + 20 + offsetY;
-                ctx.fillStyle = '#000';
-                ctx.font = '12px Arial';
-                ctx.fillText(value, x - 15, y);
-
-                console.log(value)
-            });
+            const x = padding + (i * (chartWidth / (data.length - 1))) + offsetX;
+            const y = canvas.height - padding + 20 + offsetY;
+            ctx.fillStyle = '#000';
+            ctx.font = '12px Arial';
+            ctx.fillText(year, x - 15, y);
         });
 
         // Draw lines for each field
