@@ -542,6 +542,7 @@ header {
       padding: 5px;
       border: 1px solid #bdbdbd;
       flex: 1;
+      cursor: pointer;
   }
 
   .remove_field_icon {

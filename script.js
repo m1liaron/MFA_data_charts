@@ -14,8 +14,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const selectYField = document.getElementById('select-y-field');
     const fieldXModal = document.getElementById('field-x-modal');
     const fieldYModal = document.getElementById('field-y-modal');
-    const xCaptionsContainer = document.getElementById('x-captions-container');
-    const yCaptionsContainer = document.getElementById('y-captions-container');
+    const dataRange = document.getElementById('data-range');
+    const dataRangeValue = document.getElementById('data-range-text');
     // Export section
     const exportBtn = document.getElementById('export-btn');
 
@@ -47,6 +47,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     function uploadDisplayData(data, file) {
+        dataRange.max = data.length;
         uploadedData = data;
         createDataPreviewTable(data);
         jsonOutput.textContent = JSON.stringify(data, null, 2); // Format JSON for readability
@@ -348,7 +349,7 @@ function drawLineChart(data) {
 
     const containerWidth = window.innerWidth;
     const canvasWidth = Math.max(containerWidth, 600); // Minimum width of 600px for smaller screens
-    const canvasHeight = 1200; // Keep the height fixed, or you can adjust based on container
+    const canvasHeight = 500; // Keep the height fixed, or you can adjust based on container
 
     const canvas = createElement({tag: 'canvas', id: 'line-chart', width: canvasWidth, height: canvasHeight});
     const ctx = canvas.getContext('2d');
@@ -360,7 +361,9 @@ function drawLineChart(data) {
 
     const isNumeric = (value) => !isNaN(parseFloat(value)) && isFinite(value);
 
-    const fields = Object.keys(data[0]).filter(field => data.some(row => isNumeric(row[field])) && field !== 'Year');
+    const fields = [...xFields];
+    const values = [...yFields];
+    console.log(fields)
 
     const maxValue = Math.max(
         ...data.flatMap(d =>
@@ -370,7 +373,6 @@ function drawLineChart(data) {
             })
         )
     );
-
     canvas.addEventListener('wheel', function(event) {
        const zoomAmount = event.deltaY * -0.001;
        scale = Math.min(Math.max(0.5, scale + zoomAmount), 5);
@@ -401,7 +403,6 @@ function drawLineChart(data) {
 
     function draw() {
         const chartWidth = (canvas.width - legendWidth - 60) * scale;
-        const years = data.map(d => d['Year'] || d['year']);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // Draw X and Y axes
@@ -424,7 +425,7 @@ function drawLineChart(data) {
         }
 
         // Draw X-axis labels (years)
-        years.forEach((year, i) => {
+        values.forEach((year, i) => {
             const x = padding + (i * (chartWidth / (data.length - 1))) + offsetX;
             const y = canvas.height - padding + 20 + offsetY;
             ctx.fillStyle = '#000';
@@ -684,11 +685,7 @@ function drawPieChart(data) {
             const fieldElement = createElement({tag: 'span', className: 'field__axis', textContent: `${key}:${fields[key]}`});
 
             fieldContainer.addEventListener('click', () => {
-                if(axis === 'x') {
-                    addXField(key)
-                } else {
-                    addYField(key)
-                }
+                addField(key, axis);
             });
 
             fieldContainer.appendChild(fieldElement);
@@ -697,31 +694,44 @@ function drawPieChart(data) {
         return fieldsContainer
     }
 
-    function addYField(fieldKey) {
-        const fieldItem = createElement({ tag: 'div', className: 'field__axis__container' });
-        const fieldItemText = createElement({ tag: 'p', textContent: fieldKey });
-        const removeFieldIcon = createElement({tag: 'span', className: 'material-symbols-outlined remove_field_icon'});
-        fieldItem.appendChild(fieldItemText);
-        fieldItem.appendChild(removeFieldIcon);
+    function addField(fieldKey, axis) {
+        if(xFields.has(fieldKey)) {
+            return showError('You already added this field');
+        }
 
+        const isXAxis = axis === 'x' ? xFields: yFields;
 
-        yFields.add(fieldKey);
-
-        yCaptionsContainer.appendChild(fieldItem);
-    }
-
-    function addXField(fieldKey) {
         const fieldItem = createElement({tag: 'div', className: 'field__axis__container' });
         const fieldItemText = createElement({tag: 'p', textContent: fieldKey });
-        const removeFieldIcon = createElement({tag: 'span', className: 'material-symbols-outlined remove_field_icon'});
+        const removeFieldIcon = createElement({tag: 'span', className: 'material-symbols-outlined remove_field_icon', textContent: 'close' });
+
+        removeFieldIcon.addEventListener('click', () => {
+            if(axis === 'x') {
+                xFields.delete(fieldKey);
+            } else {
+                yFields.delete(fieldKey);
+            }
+
+            fieldItem.remove();
+        });
 
         fieldItem.appendChild(fieldItemText);
         fieldItem.appendChild(removeFieldIcon);
 
-        xFields.add(fieldKey);
-
-        xCaptionContainer.appendChild(fieldItem);
+        if(axis === 'x') {
+            xFields.add(fieldKey);
+            xCaptionContainer.appendChild(fieldItem);
+        } else {
+            yFields.add(fieldKey);
+            yCaptionContainer.appendChild(fieldItem);
+        }
     }
+
+    // range
+
+    dataRange.addEventListener('change', (e) => {
+        dataRangeValue.textContent = e.target.value;
+    });
 
     // Export functions
 
