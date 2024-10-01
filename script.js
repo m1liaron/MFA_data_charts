@@ -23,6 +23,7 @@ window.addEventListener('DOMContentLoaded', () => {
     let chosenChartType = 'Line';
     let xFields = new Set();
     let yFields = new Set();
+    let rangeOfData = 1;
 
     // Common functions
 
@@ -340,7 +341,13 @@ function drawChosenChart(chartType) {
 // Generate chart
 
 // line chart
-function drawLineChart(data) {
+function drawLineChart(propsData) {
+    let data;
+    if(rangeOfData) {
+        data = propsData.slice(0, rangeOfData);
+    } else {
+        data = propsData;
+    }
     let scale = 1;
     let offsetX = 0;
     let offsetY = 0;
@@ -363,7 +370,6 @@ function drawLineChart(data) {
 
     const fields = [...xFields];
     const values = [...yFields];
-    console.log(fields)
 
     const maxValue = Math.max(
         ...data.flatMap(d =>
@@ -426,11 +432,17 @@ function drawLineChart(data) {
 
         // Draw X-axis labels (years)
         values.forEach((year, i) => {
-            const x = padding + (i * (chartWidth / (data.length - 1))) + offsetX;
-            const y = canvas.height - padding + 20 + offsetY;
-            ctx.fillStyle = '#000';
-            ctx.font = '12px Arial';
-            ctx.fillText(year, x - 15, y);
+            data.forEach((item, index) => {
+               const value = item[year];
+
+                const x = padding + (index * (chartWidth / (data.length - 1))) + offsetX;
+                const y = canvas.height - padding + 20 + offsetY;
+                ctx.fillStyle = '#000';
+                ctx.font = '12px Arial';
+                ctx.fillText(value, x - 15, y);
+
+                console.log(value)
+            });
         });
 
         // Draw lines for each field
@@ -731,6 +743,7 @@ function drawPieChart(data) {
 
     dataRange.addEventListener('change', (e) => {
         dataRangeValue.textContent = e.target.value;
+        rangeOfData = +e.target.value;
     });
 
     // Export functions
