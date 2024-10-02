@@ -2,6 +2,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('theme-toggle');
     const dropArea = document.getElementById('drop-area');
     const fileInput = document.getElementById('file-input');
+    const manualDataEntry = document.getElementById('manual-data-entry');
     const chartContainer = document.getElementById('chart__container');
     const fileList = document.getElementById('file-list');
     const dropdownButton = document.getElementById('dropdown-select');
@@ -156,7 +157,7 @@ window.addEventListener('DOMContentLoaded', () => {
     dropArea.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', (e) => handleFiles(fileInput.files));
 
-    function validateDataFileType(file) {
+        function validateDataFileType(file) {
         switch (file.type) {
             case 'application/json':
                 validateJsonFile(file);
@@ -328,26 +329,78 @@ dropdownButton.addEventListener('change', (e) => {
     chosenChartType = e.target.value;
 });
 
-generateChartBtn.addEventListener('click', () => drawChosenChart(chosenChartType));
+    generateChartBtn.addEventListener('click', () => drawChosenChart(chosenChartType));
 
-function drawChosenChart(chartType) {
-    if(!uploadedData || !uploadedData.length){
-        return showError('Export data to generate chart!');
+    function drawChosenChart(chartType) {
+        // Check if there is manual data entry
+        if (manualDataEntry.value.length) {
+            // Validate and parse JSON data
+            const validationResult = validateJsonData(manualDataEntry.value);
+            if (validationResult.error) {
+                // If there's an error, display it and return
+                return showError(validationResult.error);
+            } else {
+                // Assign validated data to uploadedData
+                uploadedData = validationResult.data;
+            }
+        }
+
+        // Check if uploadedData is valid
+        if (!uploadedData || !uploadedData.length) {
+            return showError('Export data to generate chart!');
+        }
+
+        // Draw the chosen chart
+        switch (chartType) {
+            case 'Line':
+                drawLineChart(uploadedData);
+                break;
+            case 'Bar':
+                drawBarChart(uploadedData);
+                break;
+            case 'Pie':
+                drawPieChart(uploadedData);
+                break;
+            default:
+                break;
+        }
     }
-    switch (chartType) {
-        case 'Line':
-            drawLineChart(uploadedData);
-            break;
-        case 'Bar':
-            drawBarChart(uploadedData);
-            break;
-        case 'Pie':
-            drawPieChart(uploadedData);
-            break;
-        default:
-            break;
+
+    function validateJsonData(json) {
+        try {
+            // Parse the JSON input
+            const parsedData = JSON.parse(json);
+
+            // Validate that parsedData is an array
+            if (!Array.isArray(parsedData)) {
+                return { error: 'Data must be an array of objects.', data: null };
+            }
+
+            // Validate each object in the array
+            parsedData.forEach((item, index) => {
+                if (typeof item !== 'object' || item === null) {
+                    return { error: `Item at index ${index} is not a valid object.`, data: null };
+                }
+
+                // Check if required fields exist
+                if (!item.hasOwnProperty('label') || !item.hasOwnProperty('value')) {
+                    return { error: `Item at index ${index} is missing required fields (label, value).`, data: null };
+                }
+
+                // Ensure that value is a number
+                if (typeof item.value !== 'number') {
+                    return { error: `Item at index ${index} has a non-numeric value.`, data: null };
+                }
+            });
+
+            // If all validations pass, return the parsed data
+            return { error: null, data: parsedData };
+
+        } catch (error) {
+            // Return error message for invalid JSON
+            return { error: 'Invalid JSON format: ' + error.message, data: null };
+        }
     }
-}
 
 // Generate chart
 
