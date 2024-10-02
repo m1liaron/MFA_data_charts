@@ -1,0 +1,724 @@
+:root {
+    /* Primary Colors */
+    --primary-blue: #11406e;      /* Main color that symbolizes formality and authority */
+    --secondary-blue: #0056A2;    /* Accent and background elements */
+    --white: #FFFFFF;              /* Backgrounds and text on dark backgrounds */
+    --gray-background: #F1F1F1;    /* Background for secondary elements */
+    --black: #000000;              /* Main text color */
+
+    /* Accent Colors */
+    --golden-accent: #FFD700;      /* Accents and decorative elements */
+    --error-red: #D32F2F;          /* Reporting errors or critical items */
+
+    /* Dark Mode */
+    --dark-background: #121212;     /* Background for dark mode */
+    --dark-text: #FFFFFF;           /* Text color for dark mode */
+
+    /* Typography */
+    --heading-font-size: 24px;      /* Heading font size */
+    --body-font-size: 16px;         /* Body text font size */
+    --label-font-size: 12px;        /* Labels and small text font size */
+    --heading-line-height: 32px;    /* Line height for headings */
+    --body-line-height: 24px;       /* Line height for body text */
+    --label-line-height: 16px;      /* Line height for labels */
+}
+
+/* Typography Styles */
+h1, h2, h3, h4, h5, h6 {
+    font-size: var(--heading-font-size);
+    font-weight: bold;
+    line-height: var(--heading-line-height);
+    color: var(--primary-blue);
+}
+
+canvas {
+    background-color: #fff;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.flex {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+body {
+    font-size: var(--body-font-size);
+    line-height: var(--body-line-height);
+    color: var(--black);
+    margin: 0 auto;
+    width: 100%;
+    height: 100%;
+}
+
+.label {
+    font-size: var(--label-font-size);
+    line-height: var(--label-line-height);
+    color: var(--secondary-blue);
+}
+
+/* Button Styles */
+.button-primary {
+    background-color: var(--primary-blue);
+    color: var(--white);
+    border-radius: 5px;
+    padding: 12px 24px;
+    outline: none;
+    border: none;
+    cursor: pointer;
+}
+
+.button-primary:hover {
+    background-color: #00284D; /* Slightly darker blue */
+}
+
+.button-secondary {
+    background-color: var(--golden-accent);
+    color: var(--black);
+    border-radius: 5px;
+    padding: 12px 24px;
+    outline: none;
+    border: none;
+    cursor: pointer;
+}
+
+.button-secondary:hover {
+    background-color: #D9A300; /* Slightly darker golden accent */
+}
+
+.button-error {
+    background-color: var(--error-red);
+    color: var(--white);
+    border: none;
+    cursor: pointer;
+}
+
+.button-error:hover {
+    background-color: #C62828; /* Slightly darker error red */
+}
+
+/* Chart Styles */
+.chart-palette-1 {
+    --color1: var(--primary-blue);
+    --color2: var(--secondary-blue);
+    --color3: var(--golden-accent);
+    --color4: var(--gray-background);
+    --color5: var(--error-red);
+}
+
+/* Dark Mode Styles */
+.dark-mode {
+    background-color: var(--dark-background);
+    color: var(--dark-text);
+}
+
+.dark-mode .button-primary,
+.dark-mode .button-secondary {
+    background-color: var(--primary-blue);
+    color: var(--white);
+}
+
+
+.active {
+  display: block;
+}
+
+.hide {
+  display: none;
+}
+
+
+form input {
+    background-image: none;
+    background-color: transparent;
+    box-shadow: none;
+    display: block;
+    width: 100%;
+    border: 1px solid #323A45;
+    box-sizing: border-box;
+    height: 50px;
+    margin-bottom: 0;
+    font-size: 16px;
+    line-height: 20px;
+    padding: 13px 15px 13px 13px;
+}
+
+.material-symbols-outlined {
+    cursor: pointer;
+}
+
+/* Error */
+
+.error-icon {
+    font-weight: bold;
+    color:#ff0000
+}
+
+.error-card {
+    position: absolute;
+    z-index: 100;
+    top: 0;
+    right: -100px;
+    width: 330px;
+    height: 80px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    padding: 10px 15px;
+    background-color: #ffffff;
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+    overflow: hidden;
+    display: none;
+    align-items: center;
+    justify-content: space-around;
+    gap: 15px;
+    margin: 20px;
+    transition: right 0.5s ease-in-out; /* Transition for smooth entry and exit */
+    animation: shake 1s ease-in-out; /* Shake animation */
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-10px);
+    }
+    20%, 40%, 60%, 80% {
+        transform: translateX(10px);
+    }
+}
+
+.error-card.show {
+    display: flex;
+    right: 0; /* When visible, move it to the right edge */
+}
+
+.error-card.hide {
+    right: -1000px; /* Move it back off-screen */
+}
+
+.icon-container {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #fc0c0c48;
+    border-radius: 50%;
+    margin-left: 8px;
+}
+.icon {
+    width: 17px;
+    height: 17px;
+    color: #d10d0d;
+}
+.message-text-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    flex-grow: 1;
+}
+.message-text,
+.sub-text {
+    margin: 0;
+    cursor: default;
+}
+.message-text {
+    color: #d10d0d;
+    font-size: 17px;
+    font-weight: 700;
+}
+.sub-text {
+    font-size: 14px;
+    color: #555;
+}
+.cross-icon {
+    width: 18px;
+    height: 18px;
+    color: #555;
+    cursor: pointer;
+}
+
+/* Header  */
+
+header {
+    background-color: var(--secondary-blue);
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.header__title {
+    color: var(--white)
+}
+
+.theme-switch {
+    --toggle-size: 30px;
+    /* the size is adjusted using font-size,
+       this is not transform scale,
+       so you can choose any size */
+    --container-width: 3.625em;
+    --container-height: 1.5em;
+    --container-radius: 3.25em;
+    /* radius 0 - minecraft mode :) */
+    --container-light-bg: #3D7EAE;
+    --container-night-bg: #1D1F2C;
+    --circle-container-diameter: 3.375em;
+    --sun-moon-diameter: 1.125em;
+    --sun-bg: #ECCA2F;
+    --moon-bg: #C4C9D1;
+    --spot-color: #959DB1;
+    --circle-container-offset: calc((var(--circle-container-diameter) - var(--container-height)) / 2 * -1);
+    --stars-color: #fff;
+    --clouds-color: #F3FDFF;
+    --back-clouds-color: #AACADF;
+    --transition: .5s cubic-bezier(0, -0.02, 0.4, 1.25);
+    --circle-transition: .3s cubic-bezier(0, -0.02, 0.35, 1.17);
+  }
+  
+  .theme-switch, .theme-switch *, .theme-switch *::before, .theme-switch *::after {
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-size: var(--toggle-size);
+  }
+  
+  .theme-switch__container {
+    width: var(--container-width);
+    height: var(--container-height);
+    background-color: var(--container-light-bg);
+    border-radius: var(--container-radius);
+    overflow: hidden;
+    cursor: pointer;
+    -webkit-box-shadow: 0em -0.062em 0.062em rgba(0, 0, 0, 0.25), 0em 0.062em 0.125em rgba(255, 255, 255, 0.94);
+    box-shadow: 0em -0.062em 0.062em rgba(0, 0, 0, 0.25), 0em 0.062em 0.125em rgba(255, 255, 255, 0.94);
+    -webkit-transition: var(--transition);
+    -o-transition: var(--transition);
+    transition: var(--transition);
+    position: relative;
+  }
+  
+  .theme-switch__container::before {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    -webkit-box-shadow: 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset, 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset;
+    box-shadow: 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset, 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset;
+    border-radius: var(--container-radius)
+  }
+  
+  .theme-switch__checkbox {
+    display: none;
+  }
+  
+  .theme-switch__circle-container {
+    width: var(--circle-container-diameter);
+    height: var(--circle-container-diameter);
+    background-color: rgba(255, 255, 255, 0.1);
+    position: absolute;
+    left: var(--circle-container-offset);
+    top: var(--circle-container-offset);
+    border-radius: var(--container-radius);
+    -webkit-box-shadow: inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), 0 0 0 0.625em rgba(255, 255, 255, 0.1), 0 0 0 1.25em rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), 0 0 0 0.625em rgba(255, 255, 255, 0.1), 0 0 0 1.25em rgba(255, 255, 255, 0.1);
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-transition: var(--circle-transition);
+    -o-transition: var(--circle-transition);
+    transition: var(--circle-transition);
+    pointer-events: none;
+  }
+  
+  .theme-switch__sun-moon-container {
+    pointer-events: auto;
+    position: relative;
+    z-index: 2;
+    width: var(--sun-moon-diameter);
+    height: var(--sun-moon-diameter);
+    margin: auto;
+    border-radius: var(--container-radius);
+    background-color: var(--sun-bg);
+    -webkit-box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #a1872a inset;
+    box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #a1872a inset;
+    -webkit-filter: drop-shadow(0.062em 0.125em 0.125em rgba(0, 0, 0, 0.25)) drop-shadow(0em 0.062em 0.125em rgba(0, 0, 0, 0.25));
+    filter: drop-shadow(0.062em 0.125em 0.125em rgba(0, 0, 0, 0.25)) drop-shadow(0em 0.062em 0.125em rgba(0, 0, 0, 0.25));
+    overflow: hidden;
+    -webkit-transition: var(--transition);
+    -o-transition: var(--transition);
+    transition: var(--transition);
+  }
+  
+  .theme-switch__moon {
+    -webkit-transform: translateX(100%);
+    -ms-transform: translateX(100%);
+    transform: translateX(100%);
+    width: 100%;
+    height: 100%;
+    background-color: var(--moon-bg);
+    border-radius: inherit;
+    -webkit-box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #969696 inset;
+    box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #969696 inset;
+    -webkit-transition: var(--transition);
+    -o-transition: var(--transition);
+    transition: var(--transition);
+    position: relative;
+  }
+  
+  .theme-switch__spot {
+    position: absolute;
+    top: 0.75em;
+    left: 0.312em;
+    width: 0.75em;
+    height: 0.75em;
+    border-radius: var(--container-radius);
+    background-color: var(--spot-color);
+    -webkit-box-shadow: 0em 0.0312em 0.062em rgba(0, 0, 0, 0.25) inset;
+    box-shadow: 0em 0.0312em 0.062em rgba(0, 0, 0, 0.25) inset;
+  }
+  
+  .theme-switch__spot:nth-of-type(2) {
+    width: 0.375em;
+    height: 0.375em;
+    top: 0.937em;
+    left: 1.375em;
+  }
+  
+  .theme-switch__spot:nth-last-of-type(3) {
+    width: 0.25em;
+    height: 0.25em;
+    top: 0.312em;
+    left: 0.812em;
+  }
+  
+  .theme-switch__clouds {
+    width: 1.25em;
+    height: 1.25em;
+    background-color: var(--clouds-color);
+    border-radius: var(--container-radius);
+    position: absolute;
+    bottom: -0.625em;
+    left: 0.312em;
+    -webkit-box-shadow: 0.937em 0.312em var(--clouds-color), -0.312em -0.312em var(--back-clouds-color), 1.437em 0.375em var(--clouds-color), 0.5em -0.125em var(--back-clouds-color), 2.187em 0 var(--clouds-color), 1.25em -0.062em var(--back-clouds-color), 2.937em 0.312em var(--clouds-color), 2em -0.312em var(--back-clouds-color), 3.625em -0.062em var(--clouds-color), 2.625em 0em var(--back-clouds-color), 4.5em -0.312em var(--clouds-color), 3.375em -0.437em var(--back-clouds-color), 4.625em -1.75em 0 0.437em var(--clouds-color), 4em -0.625em var(--back-clouds-color), 4.125em -2.125em 0 0.437em var(--back-clouds-color);
+    box-shadow: 0.937em 0.312em var(--clouds-color), -0.312em -0.312em var(--back-clouds-color), 1.437em 0.375em var(--clouds-color), 0.5em -0.125em var(--back-clouds-color), 2.187em 0 var(--clouds-color), 1.25em -0.062em var(--back-clouds-color), 2.937em 0.312em var(--clouds-color), 2em -0.312em var(--back-clouds-color), 3.625em -0.062em var(--clouds-color), 2.625em 0em var(--back-clouds-color), 4.5em -0.312em var(--clouds-color), 3.375em -0.437em var(--back-clouds-color), 4.625em -1.75em 0 0.437em var(--clouds-color), 4em -0.625em var(--back-clouds-color), 4.125em -2.125em 0 0.437em var(--back-clouds-color);
+    -webkit-transition: 0.5s cubic-bezier(0, -0.02, 0.4, 1.25);
+    -o-transition: 0.5s cubic-bezier(0, -0.02, 0.4, 1.25);
+    transition: 0.5s cubic-bezier(0, -0.02, 0.4, 1.25);
+  }
+  
+  .theme-switch__stars-container {
+    position: absolute;
+    color: var(--stars-color);
+    top: -100%;
+    left: 0.312em;
+    width: 2.75em;
+    height: auto;
+    -webkit-transition: var(--transition);
+    -o-transition: var(--transition);
+    transition: var(--transition);
+  }
+  
+  /* actions */
+  
+  .theme-switch__checkbox:checked + .theme-switch__container {
+    background-color: var(--container-night-bg);
+  }
+  
+  .theme-switch__checkbox:checked + .theme-switch__container .theme-switch__circle-container {
+    left: calc(100% - var(--circle-container-offset) - var(--circle-container-diameter));
+  }
+  
+  .theme-switch__checkbox:checked + .theme-switch__container .theme-switch__circle-container:hover {
+    left: calc(100% - var(--circle-container-offset) - var(--circle-container-diameter) - 0.187em)
+  }
+  
+  .theme-switch__circle-container:hover {
+    left: calc(var(--circle-container-offset) + 0.187em);
+  }
+  
+  .theme-switch__checkbox:checked + .theme-switch__container .theme-switch__moon {
+    -webkit-transform: translate(0);
+    -ms-transform: translate(0);
+    transform: translate(0);
+  }
+  
+  .theme-switch__checkbox:checked + .theme-switch__container .theme-switch__clouds {
+    bottom: -4.062em;
+  }
+  
+  .theme-switch__checkbox:checked + .theme-switch__container .theme-switch__stars-container {
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+  }
+
+  main {
+      padding: 40px;    
+  }
+
+.visualization__container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    box-sizing: border-box;
+    margin-bottom: 100px;
+}
+
+  .row-container {
+    display: flex; /* Use flexbox to align items in a row */
+    align-items: center; /* Vertically center items */
+  flex-wrap: wrap;
+  }
+
+  #manual-data-entry {
+      width: 100%;
+      height: 10rem;
+      margin-top: 10px;
+  }
+
+  /* Customization Section */
+
+  .customization__form {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgb(0 0 0);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background-color: #fff;
+      padding: 1rem;
+  }
+
+/* General styles for the modal */
+.fieldModal {
+    position: absolute; /* Position it relative to its closest positioned ancestor */
+    background-color: white; /* White background for contrast */
+    border: 1px solid #ccc; /* Light gray border */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+    border-radius: 8px; /* Rounded corners */
+    padding: 16px; /* Padding inside the modal */
+    z-index: 1000; /* Make sure it appears above other elements */
+    width: 300px; /* Set a fixed width */
+    max-height: 400px; /* Set a max height for the modal */
+    overflow-y: auto; /* Allow scrolling if content overflows */
+}
+
+/* Positioning the modal slightly to the right */
+.fieldModal.show {
+    display: block; /* Show the modal when the 'show' class is added */
+}
+
+/* Optional: Style for modal animations */
+.fieldModal {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* When the modal is visible, add an animation */
+.fieldModal.show {
+    opacity: 1; /* Fully visible */
+    transform: translateX(10px); /* Move slightly to the right */
+}
+
+/* Additional styling for the modal's content, like buttons or lists */
+.fieldModal .modal-content {
+    margin-top: 10px; /* Add space between modal header and content */
+}
+
+  .fields__axis__container {
+      display: flex;
+      flex-direction: column;
+  }
+
+  .field__axis__container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 10px;
+      gap: 5px;
+  }
+
+  .field__axis {
+      padding: 5px;
+      border: 1px solid #bdbdbd;
+      flex: 1;
+      cursor: pointer;
+  }
+
+  .remove_field_icon {
+      font-weight: bold;
+      color: #ffffff;
+      padding: 5px;
+      background-color: red;
+  }
+
+  .remove_field_icon:hover {
+      background-color: #a40000;
+      transition: 0.1s;
+  }
+
+
+  .drag-drop-area {
+      width: 100%;
+      height: 320px;
+      border: 2px dashed #ccc;
+      border-radius: 5px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      text-align: center;
+  }
+
+  .appropriate__types__title {
+      background-color: #3e4779;
+      color: #fff;
+      padding: 20px;
+      border-radius: 5px;
+  }
+
+  .table__placeholder {
+      max-width: 1280px;
+      max-height: 600px;
+      overflow: auto;
+      /*border: 1px solid #ccc;*/
+      border-radius: 20px;
+      -webkit-box-shadow: 0px 0px 50px -7px var(--golden-accent);
+      -moz-box-shadow: 0px 0px 29px -7px var(--golden-accent);
+      box-shadow: 0px 0px 159px -7px var(--golden-accent);
+  }
+/* Custom scrollbar styles */
+
+.table__placeholder::-webkit-scrollbar {
+    width: 20px; /* Width of the scrollbar */
+}
+
+/* Track */
+.table__placeholder::-webkit-scrollbar-track {
+    background: var(--gray-background); /* Background for the scrollbar track */
+}
+
+/* Handle */
+.table__placeholder::-webkit-scrollbar-thumb {
+    background: var(--primary-blue); /* Color for the scrollbar handle */
+    border-radius: 6px; /* Rounded corners for the handle */
+}
+
+/* Handle on hover */
+.table__placeholder::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-blue); /* Color for the scrollbar handle on hover */
+}
+
+/* Optional: Add a border to the scrollbar handle */
+.table__placeholder::-webkit-scrollbar-thumb {
+    border: 2px solid var(--gray-background); /* Border color for the handle */
+}
+
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    text-align: center;
+    margin-top: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  th, td {
+    border: 1px solid #000;
+    padding: 10px;
+  }
+
+  thead th {
+    background-color: var(--primary-blue);
+    color: var(--white);
+  }
+
+  tbody th {
+    background-color: #f9f9f9;
+  }
+
+  .drag-drop-area:hover {
+      background-color: #f9f9f9;
+  }
+
+  .drag-drop-area.active {
+      border-color: var(--primary-blue);
+      background-color: #e6f7ff;
+  }
+
+  #file-list {
+      margin-top: 20px;
+      width: 400px;
+  }
+
+.chart-container {
+    position: relative;
+    width: 100%; /* Full width for the container */
+    max-width: 90vw; /* Limit the max width to 90% of the viewport */
+    height: 600px; /* Set a fixed height for the visible area */
+    overflow: auto; /* Enable scrolling if the content exceeds the container's size */
+    border: 1px solid #ddd; /* Add a border to visually separate the chart */
+    padding: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for a clean look */
+}
+
+  .chart__container {
+      width: 100%;
+      height: 100%;
+      overflow-x: auto; /* Allows horizontal scrolling */
+      display: flex;
+      justify-content: end;
+      align-items: start;
+  }
+
+
+    .file-item {
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        border-radius: 5px;
+    }
+
+    .charts__dropdown__container {
+        position: absolute;
+
+      width: 1rem;
+    }
+
+    .generate__charts__button {
+        margin-top: 10px;
+    }
+
+    /* visualization__container */
+
+.fields__list__container {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.field__Container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+
+.field__div {
+    width: 40px;
+    height: 10px;
+}
