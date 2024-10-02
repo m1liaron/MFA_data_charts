@@ -487,17 +487,26 @@ function drawLineChart(propsData) {
 }
 
 // bar chart
-function drawBarChart(data) {
-    const keys = [...yFields]
-    const labels = []; // All years
+function drawBarChart(propsData) {
+    const data = checkDataForDuplicate(propsData);
+    let scale = 1;
+    let offsetX = 0;
+    let offsetY = 0;
+    let isDragging = false;
+    let dragStartX, dragStartY;
 
-    [...xFields].forEach((field) => {
+    const keys = [...yFields];
+    const labels = new Set(); // Use Set for unique labels
+
+    // Collect unique labels
+    xFields.forEach((field) => {
         data.forEach((item) => {
             const value = item[field];
-            labels.push(value);
+            labels.add(value);
         });
     });
 
+    const uniqueLabels = Array.from(labels); // Convert Set back to array
     const dataSeries = keys.map(key => data.map(item => item[key]));
     const maxValue = Math.max(
         ...data.flatMap(d =>
@@ -509,74 +518,104 @@ function drawBarChart(data) {
     );
 
     // Create canvas
-    const barCanvas = createElement({ tag:'canvas', id: 'bar-chart' });
-    barCanvas.id = 'bar-chart';
+    const barCanvas = createElement({ tag: 'canvas', id: 'bar-chart' });
     const barCtx = barCanvas.getContext('2d');
+
+    barCanvas.addEventListener('wheel', function(event) {
+        const zoomAmount = event.deltaY * -0.001;
+        scale = Math.min(Math.max(0.5, scale + zoomAmount), 5);
+        draw();
+    });
+
+    // Add mouse events for dragging
+    barCanvas.addEventListener('mousedown', function(event) {
+        isDragging = true;
+        dragStartX = event.offsetX - offsetX;
+        dragStartY = event.offsetY - offsetY;
+    });
+
+    barCanvas.addEventListener('mousemove', function(event) {
+        if(isDragging) {
+            offsetX = event.offsetX - dragStartX;
+            offsetY = event.offsetY - dragStartY;
+            draw();
+        }
+    });
+
+    barCanvas.addEventListener('mouseup', function() {
+        isDragging = false;
+    });
+
+    barCanvas.addEventListener('mouseleave', function() {
+        isDragging = false;
+    });
 
     barCanvas.width = 900;
     barCanvas.height = 400;
 
-    // Bar chart dimensions
-    const barChartHeight = barCanvas.height - 60; // Padding for labels
-    const barPadding = 50;
-    const barWidth = 40; // Width of each bar group (multiple series per year)
-    const seriedPadding = 10;
+    function draw() {
+        const barChartHeight = barCanvas.height - 60; // Padding for labels
+        const barPadding = 50;
+        const baseBarWidth = 40; // Base width of each bar group (without scaling)
+        const barWidth = baseBarWidth * scale; // Scale the bar width
 
-    // Clear the canvas
-    barCtx.clearRect(0, 0, barCanvas.width, barCanvas.height);
+        // Clear the canvas
+        barCtx.clearRect(0, 0, barCanvas.width, barCanvas.height);
 
-    // Draw X and Y axis
-    barCtx.beginPath();
-    barCtx.moveTo(barPadding, barPadding);
-    barCtx.lineTo(barPadding, barCanvas.height - barPadding);
-    barCtx.lineTo(barCanvas.width - barPadding, barCanvas.height - barPadding);
-    barCtx.strokeStyle = '#000';
-    barCtx.lineWidth = 2;
-    barCtx.stroke();
+        // Draw X and Y axis
+        barCtx.beginPath();
+        barCtx.moveTo(barPadding, barPadding);
+        barCtx.lineTo(barPadding, barCanvas.height - barPadding);
+        barCtx.lineTo(barCanvas.width - barPadding, barCanvas.height - barPadding);
+        barCtx.strokeStyle = '#000';
+        barCtx.lineWidth = 2;
+        barCtx.stroke();
 
-    // Color array for multiple series
-    labels.forEach((label, i) => {
-        keys.forEach((key, j) => {
-            const value = dataSeries[j][i];
-            const x = barPadding + i * (barWidth + 40) + j * (barWidth / keys.length + seriedPadding);
-            const y = barCanvas.height - barPadding - (value / maxValue) * barChartHeight
+        // Draw bars
+        uniqueLabels.forEach((label, i) => {
+            keys.forEach((key, j) => {
+                const value = dataSeries[j][i];
+                const x = barPadding + (i * (barWidth + 10)) + j * (barWidth / keys.length);
+                const y = barCanvas.height - barPadding - (value / maxValue) * barChartHeight;
 
+                barCtx.fillStyle = getColor(j);
+                barCtx.fillRect(x, y, barWidth / keys.length, (value / maxValue) * barChartHeight);
+            });
 
-            barCtx.fillStyle = getColor(j);
-            barCtx.fillRect(x, y, barWidth / keys.length, (value / maxValue) * barChartHeight);
+            barCtx.fillStyle = '#000';
+            barCtx.font = '12px Arial';
+            const labelX = barPadding + i * (barWidth + 10);
+            barCtx.fillText(label, labelX + (barWidth / 4), barCanvas.height - barPadding + 20);
         });
 
-        barCtx.fillStyle = '#000';
-        barCtx.font = '12px Arial';
-        const labelX = barPadding + i * ( barWidth + 40);
-        barCtx.fillText(label, labelX + barWidth / 4, barCanvas.height - barPadding + 20);
-    });
+        // Draw Y axis values (scaling on Y-axis)
+        const stepSize = maxValue / 5;
+        for (let i = 0; i <= 5; i++) {
+            const y = barCanvas.height - barPadding - (i * (barChartHeight / 5));
+            const value = (stepSize * i).toFixed(0);
 
-    // Draw Y axis values (scaling on Y-axis)
-    const stepSize = maxValue / 5;
-    for (let i = 0; i <= 5; i++) {
-        const y = barCanvas.height - barPadding - (i * (barChartHeight / 5));
-        const value = (stepSize * i).toFixed(0);
+            barCtx.fillStyle = '#000';
+            barCtx.font = '12px Arial';
+            barCtx.fillText(value, barPadding - 40, y + 5);
+        }
 
-        barCtx.fillStyle = '#000';
-        barCtx.font = '12px Arial';
-        barCtx.fillText(value, barPadding - 40, y + 5);
+        // Add a legend
+        keys.forEach((key, index) => {
+            const legendX = barCanvas.width - barPadding + 10;
+            const legendY = barPadding + index * 20;
+
+            // Color square for the legend
+            barCtx.fillStyle = getColor(index);
+            barCtx.fillRect(legendX, legendY, 15, 15);
+
+            // Series name
+            barCtx.fillStyle = '#000';
+            barCtx.font = '12px Arial';
+            barCtx.fillText(key, legendX + 20, legendY + 12);
+        });
     }
 
-    // Add a legend
-    keys.forEach((key, index) => {
-        const legendX = barCanvas.width - barPadding + 10;
-        const legendY = barPadding + index * 20;
-
-        // Color square for the legend
-        barCtx.fillStyle = getColor(index);
-        barCtx.fillRect(legendX, legendY, 15, 15);
-
-        // Series name
-        barCtx.fillStyle = '#000';
-        barCtx.font = '12px Arial';
-        barCtx.fillText(key, legendX + 20, legendY + 12);
-    });
+    draw();
     addCanvasToChartContainer(barCanvas);
 }
 
