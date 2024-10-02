@@ -92,6 +92,8 @@ body {
 .button-error {
     background-color: var(--error-red);
     color: var(--white);
+    border: none;
+    cursor: pointer;
 }
 
 .button-error:hover {

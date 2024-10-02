@@ -6,12 +6,14 @@ window.addEventListener('DOMContentLoaded', () => {
     const fileList = document.getElementById('file-list');
     const dropdownButton = document.getElementById('dropdown-select');
     const generateChartBtn = document.getElementById('generate-chart-btn');
+    const graphTitleInput = document.getElementById('graph-title-input');
     const xCaptionContainer = document.getElementById('x-caption-container');
     const yCaptionContainer = document.getElementById('y-caption-container');
     const selectXField = document.getElementById('select-x-field');
     const selectYField = document.getElementById('select-y-field');
     const fieldXModal = document.getElementById('field-x-modal');
     const fieldYModal = document.getElementById('field-y-modal');
+    const resetFileBtn = document.getElementById('reset-files-btn');
     const dataRange = document.getElementById('data-range');
     const dataRangeValue = document.getElementById('data-range-text');
     const exportBtn = document.getElementById('export-btn');
@@ -687,6 +689,7 @@ function drawPieChart(data) {
 
 
     // Customization panel functions ✒️
+
     selectXField.addEventListener('click', showXFieldModal);
     selectYField.addEventListener('click', showYFieldModal);
 
@@ -777,6 +780,18 @@ function drawPieChart(data) {
     dataRange.addEventListener('change', (e) => {
         dataRangeValue.textContent = e.target.value;
         rangeOfData = +e.target.value;
+    });
+
+    resetFileBtn.addEventListener('click', () => {
+        tablePlaceholder.innerHTML = '';
+        uploadedData = [];
+        xFields.clear();
+        yFields.clear();
+        fieldXModal.classList.add('hide');
+        fieldYModal.classList.add('hide');
+        chartContainer.innerHTML = '';
+        jsonOutput.textContent = '';
+        fileList.innerHTML = '';
     });
 
     // Export functions
