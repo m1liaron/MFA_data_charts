@@ -344,12 +344,7 @@ function drawChosenChart(chartType) {
 
 // line chart
 function drawLineChart(propsData) {
-    let data;
-    if(rangeOfData) {
-        data = propsData.slice(0, rangeOfData);
-    } else {
-        data = propsData
-    }
+    const data = checkDataForDuplicate(propsData);
     let scale = 1;
     let offsetX = 0;
     let offsetY = 0;
@@ -657,6 +652,26 @@ function drawPieChart(data) {
        addCanvasToChartContainer(pieCanvas);
         chartContainer.appendChild(nextYearButton);
     }
+
+function checkDataForDuplicate(data) {
+    const result = {};
+
+    data.forEach(item => {
+       const { Year, ...values } = item;
+
+       if(result[Year]) {
+           Object.keys(values).forEach(key => {
+              if(typeof values[key] === 'number') {
+                  result[Year][key] += values[key];
+              }
+           });
+       } else {
+           result[Year] = { ...values };
+       }
+    });
+
+    return Object.entries(result).map(([year, values]) => ({ Year: parseInt(year), ...values }));
+};
 
     // Customization panel functions ✒️
     selectXField.addEventListener('click', showXFieldModal);
