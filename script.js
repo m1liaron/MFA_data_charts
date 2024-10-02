@@ -23,7 +23,7 @@ window.addEventListener('DOMContentLoaded', () => {
     let graphTitleValue = '';
     let xFields = new Set();
     let yFields = new Set();
-    let exportType = 'PNG'; // png || pdf || svg
+    let exportType = 'png'; // png || pdf || svg
 
     // Error Handling
     const errorCard = document.querySelector('.error-card');
@@ -620,7 +620,8 @@ function drawBarChart(propsData) {
 }
 
 // Pie chart
-function drawPieChart(data) {
+function drawPieChart(propsData){
+    const data = checkDataForDuplicate(propsData);
         const pieCanvas = createElement({
             tag: 'canvas',
             id: 'pie-chart',
@@ -844,16 +845,16 @@ function drawPieChart(data) {
     exportBtn.addEventListener('click', () => {
         const canvas = document.querySelector(`#${chosenChartType.toLowerCase()}-chart`);
 
+        console.log(exportType)
         if(canvas) {
-            if(exportType === 'PNG') {
+            if(exportType === 'png') {
                 const image = canvas.toDataURL('image/png', 1.0);
 
                 const link = document.createElement('a');
                 link.href = image;
                 link.download = 'graph.png';
                 link.click();
-            } else {
-                const ctx = canvas.getContext('2d');
+            } else if (exportType === 'svg') {
                 const width = canvas.width;
                 const height = canvas.height;
 
@@ -870,6 +871,25 @@ function drawPieChart(data) {
                 link.href = svgUrl;
                 link.download = 'graph.svg';
                 link.click();
+            } else if(exportType === 'pdf') {
+                const printWindow = window.open('', '_blank');
+
+                if (printWindow) {
+                    const image = canvas.toDataURL('image/png');
+                    printWindow.document.write(`
+                    <html>
+                        <head>
+                            <title>{graphTitleValue}</title>
+                        </head>
+                        <body>
+                            <img src="${image}" style="width: 100%; height: auto;" />
+                        </body>
+                    </html>
+                `);
+                    printWindow.document.close(); // Close the document to finish loading
+                    printWindow.print(); // Trigger the print dialog
+                    // printWindow.close(); // Optionally close the print window after printing
+                }
             }
         } else {
             showError('No chart to export')
