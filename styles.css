@@ -479,6 +479,8 @@ header {
     align-items: center; /* Vertically center items */
   }
 
+  /* Customization Section */
+
   .customization__form {
       box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgb(0 0 0);
       display: flex;
@@ -487,6 +489,74 @@ header {
       background-color: #fff;
       padding: 1rem;
   }
+
+/* General styles for the modal */
+.fieldModal {
+    position: absolute; /* Position it relative to its closest positioned ancestor */
+    background-color: white; /* White background for contrast */
+    border: 1px solid #ccc; /* Light gray border */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+    border-radius: 8px; /* Rounded corners */
+    padding: 16px; /* Padding inside the modal */
+    z-index: 1000; /* Make sure it appears above other elements */
+    width: 300px; /* Set a fixed width */
+    max-height: 400px; /* Set a max height for the modal */
+    overflow-y: auto; /* Allow scrolling if content overflows */
+}
+
+/* Positioning the modal slightly to the right */
+.fieldModal.show {
+    display: block; /* Show the modal when the 'show' class is added */
+}
+
+/* Optional: Style for modal animations */
+.fieldModal {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* When the modal is visible, add an animation */
+.fieldModal.show {
+    opacity: 1; /* Fully visible */
+    transform: translateX(10px); /* Move slightly to the right */
+}
+
+/* Additional styling for the modal's content, like buttons or lists */
+.fieldModal .modal-content {
+    margin-top: 10px; /* Add space between modal header and content */
+}
+
+  .fields__axis__container {
+      display: flex;
+      flex-direction: column;
+  }
+
+  .field__axis__container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 10px;
+      gap: 5px;
+  }
+
+  .field__axis {
+      padding: 5px;
+      border: 1px solid #bdbdbd;
+      flex: 1;
+      cursor: pointer;
+  }
+
+  .remove_field_icon {
+      font-weight: bold;
+      color: #ffffff;
+      padding: 5px;
+      background-color: red;
+  }
+
+  .remove_field_icon:hover {
+      background-color: #a40000;
+      transition: 0.1s;
+  }
+
 
   .drag-drop-area {
       width: 30rem;

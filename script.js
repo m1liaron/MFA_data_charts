@@ -7,9 +7,23 @@ window.addEventListener('DOMContentLoaded', () => {
     // Generation chart elements
     const dropdownButton = document.getElementById('dropdown-select');
     const generateChartBtn = document.getElementById('generate-chart-btn');
+    // customization panel
+    const xCaptionContainer = document.getElementById('x-caption-container');
+    const yCaptionContainer = document.getElementById('y-caption-container');
+    const selectXField = document.getElementById('select-x-field');
+    const selectYField = document.getElementById('select-y-field');
+    const fieldXModal = document.getElementById('field-x-modal');
+    const fieldYModal = document.getElementById('field-y-modal');
+    const dataRange = document.getElementById('data-range');
+    const dataRangeValue = document.getElementById('data-range-text');
+    // Export section
+    const exportBtn = document.getElementById('export-btn');
 
     let uploadedData;
     let chosenChartType = 'Line';
+    let xFields = new Set();
+    let yFields = new Set();
+    let rangeOfData = 0;
 
     // Common functions
 
@@ -34,6 +48,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     function uploadDisplayData(data, file) {
+        dataRange.max = data.length;
         uploadedData = data;
         createDataPreviewTable(data);
         jsonOutput.textContent = JSON.stringify(data, null, 2); // Format JSON for readability
@@ -265,7 +280,7 @@ window.addEventListener('DOMContentLoaded', () => {
             const tr = createElement({ tag: 'tr' });
             const th = createElement({ tag: 'th', textContent: rowIndex + 1 });
             tr.appendChild(th);
-            
+
             Object.values(rowData).forEach((value) => {
                 const td = createElement({ tag: 'td', textContent: value });
                 tr.appendChild(td);
@@ -273,7 +288,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
             columnContainer.appendChild(tr);
         });
-        
+
         columnContainer.appendChild(tr);
         table.appendChild(columnContainer);
     }
@@ -326,7 +341,13 @@ function drawChosenChart(chartType) {
 // Generate chart
 
 // line chart
-function drawLineChart(data) {
+function drawLineChart(propsData) {
+    let data;
+    if(rangeOfData) {
+        data = propsData.slice(0, rangeOfData);
+    } else {
+        data = propsData
+    }
     let scale = 1;
     let offsetX = 0;
     let offsetY = 0;
@@ -335,7 +356,7 @@ function drawLineChart(data) {
 
     const containerWidth = window.innerWidth;
     const canvasWidth = Math.max(containerWidth, 600); // Minimum width of 600px for smaller screens
-    const canvasHeight = 1200; // Keep the height fixed, or you can adjust based on container
+    const canvasHeight = 500; // Keep the height fixed, or you can adjust based on container
 
     const canvas = createElement({tag: 'canvas', id: 'line-chart', width: canvasWidth, height: canvasHeight});
     const ctx = canvas.getContext('2d');
@@ -347,7 +368,8 @@ function drawLineChart(data) {
 
     const isNumeric = (value) => !isNaN(parseFloat(value)) && isFinite(value);
 
-    const fields = Object.keys(data[0]).filter(field => data.some(row => isNumeric(row[field])) && field !== 'Year');
+    const fields = [...yFields];
+    const values = [...xFields];
 
     const maxValue = Math.max(
         ...data.flatMap(d =>
@@ -357,7 +379,6 @@ function drawLineChart(data) {
             })
         )
     );
-
     canvas.addEventListener('wheel', function(event) {
        const zoomAmount = event.deltaY * -0.001;
        scale = Math.min(Math.max(0.5, scale + zoomAmount), 5);
@@ -388,7 +409,6 @@ function drawLineChart(data) {
 
     function draw() {
         const chartWidth = (canvas.width - legendWidth - 60) * scale;
-        const years = data.map(d => d['Year'] || d['year']);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // Draw X and Y axes
@@ -411,12 +431,16 @@ function drawLineChart(data) {
         }
 
         // Draw X-axis labels (years)
-        years.forEach((year, i) => {
-            const x = padding + (i * (chartWidth / (data.length - 1))) + offsetX;
-            const y = canvas.height - padding + 20 + offsetY;
-            ctx.fillStyle = '#000';
-            ctx.font = '12px Arial';
-            ctx.fillText(year, x - 15, y);
+        values.forEach((year) => {
+            data.forEach((item, index) => {
+                const value = item[year];
+
+                const x = padding + (index * (chartWidth / (data.length - 1))) + offsetX;
+                const y = canvas.height - padding + 20 + offsetY;
+                ctx.fillStyle = '#000';
+                ctx.font = '12px Arial';
+                ctx.fillText(value, x - 15, y);
+            })
         });
 
         // Draw lines for each field
@@ -460,22 +484,25 @@ function drawLineChart(data) {
 
 // bar chart
 function drawBarChart(data) {
-    // Get all keys (excluding 'Year') for the data series
-    const fields = Object.keys(data[0]).filter(field => data.some(row => isNumeric(row[field])) && field !== 'Year');
+    const keys = [...yFields]
+    const labels = []; // All years
 
+    [...xFields].forEach((field) => {
+        data.forEach((item) => {
+            const value = item[field];
+            labels.push(value);
+        });
+    });
+
+    const dataSeries = keys.map(key => data.map(item => item[key]));
     const maxValue = Math.max(
         ...data.flatMap(d =>
-            fields.map(field => {
+            keys.map(field => {
                 const value = d[field];
                 return isNumeric(value) ? parseFloat(value) : -Infinity; // Use -Infinity to exclude non-numeric values
             })
         )
     );
-
-    const keys = Object.keys(data[0]).filter(key => key !== 'Year') // numbers
-    const labels = data.map(item => item.Year); // years
-
-    const dataSeries = keys.map(key => data.map(item => item[key]));
 
     // Create canvas
     const barCanvas = createElement({ tag:'canvas', id: 'bar-chart' });
@@ -628,9 +655,101 @@ function drawPieChart(data) {
         chartContainer.appendChild(nextYearButton);
     }
 
+    // Customization panel functions ✒️
+    selectXField.addEventListener('click', showXFieldModal);
+    selectYField.addEventListener('click', showYFieldModal);
+
+    let xFieldModalContent = null;
+    let yFieldModalContent = null;
+
+    function showXFieldModal() {
+        if (uploadedData && uploadedData.length > 0) {
+            if(!fieldYModal.classList.contains('hide')){
+                fieldYModal.classList.toggle('hide');
+            }
+
+            if (!xFieldModalContent) {
+                const fields = uploadedData[0];
+                xFieldModalContent = createFieldModal(fields, 'x');
+                fieldXModal.appendChild(xFieldModalContent);
+            }
+                fieldXModal.classList.toggle('hide');
+        }
+    }
+
+    function showYFieldModal() {
+        if (uploadedData && uploadedData.length > 0) {
+            if(!fieldXModal.classList.contains('hide')){
+                fieldXModal.classList.toggle('hide');
+            }
+
+            if (!yFieldModalContent) {
+                yFieldModalContent = createFieldModal(uploadedData[0], 'y');
+                fieldYModal.appendChild(yFieldModalContent);
+            }
+            fieldYModal.classList.toggle('hide');
+        }
+    }
+
+    function createFieldModal(fields, axis) {
+        const fieldsContainer = createElement({ tag: 'div', className: 'fields__axis__container' });
+        for(let key in fields) {
+            const fieldContainer = createElement({ tag: 'div', className: 'field__axis__container' });
+            const fieldElement = createElement({tag: 'span', className: 'field__axis', textContent: `${key}:${fields[key]}`});
+
+            fieldContainer.addEventListener('click', () => {
+                addField(key, axis);
+            });
+
+            fieldContainer.appendChild(fieldElement);
+            fieldsContainer.appendChild(fieldContainer);
+        }
+        return fieldsContainer
+    }
+
+    function addField(fieldKey, axis) {
+        if(xFields.has(fieldKey) || yFields.has(fieldKey)) {
+            return showError('You already added this field');
+        }
+        if([...yFields].length > 1) {
+            return;
+        }
+
+        const fieldItem = createElement({tag: 'div', className: 'field__axis__container' });
+        const fieldItemText = createElement({tag: 'p', textContent: fieldKey });
+        const removeFieldIcon = createElement({tag: 'span', className: 'material-symbols-outlined remove_field_icon', textContent: 'close' });
+
+        removeFieldIcon.addEventListener('click', () => {
+            if(axis === 'x') {
+                xFields.delete(fieldKey);
+            } else {
+                yFields.delete(fieldKey);
+            }
+
+            fieldItem.remove();
+        });
+
+        fieldItem.appendChild(fieldItemText);
+        fieldItem.appendChild(removeFieldIcon);
+
+        if(axis === 'x') {
+            xFields.add(fieldKey);
+            xCaptionContainer.appendChild(fieldItem);
+        } else {
+            yFields.add(fieldKey);
+            yCaptionContainer.appendChild(fieldItem);
+        }
+    }
+
+    // range
+
+    dataRange.addEventListener('change', (e) => {
+        dataRangeValue.textContent = e.target.value;
+        rangeOfData = +e.target.value;
+    });
+
     // Export functions
 
-    const exportBtn = document.getElementById('export-btn');
     exportBtn.addEventListener('click', () => {
         const canvas = document.querySelector(`#${chosenChartType.toLowerCase()}-chart`);
 
