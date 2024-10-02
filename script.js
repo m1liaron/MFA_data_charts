@@ -15,6 +15,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const dataRange = document.getElementById('data-range');
     const dataRangeValue = document.getElementById('data-range-text');
     const exportBtn = document.getElementById('export-btn');
+    const exportSelect = document.getElementById('select-export');
 
     // State Variables
     let uploadedData;
@@ -22,6 +23,7 @@ window.addEventListener('DOMContentLoaded', () => {
     let xFields = new Set();
     let yFields = new Set();
     let rangeOfData = 0;
+    let exportType = 'PNG'; // png || pdf || svg
 
     // Error Handling
     const errorCard = document.querySelector('.error-card');
@@ -751,18 +753,42 @@ function drawPieChart(data) {
 
     // Export functions
 
+    exportSelect.addEventListener('change', (e) => {
+        exportType = e.target.value;
+    });
+
     exportBtn.addEventListener('click', () => {
         const canvas = document.querySelector(`#${chosenChartType.toLowerCase()}-chart`);
 
         if(canvas) {
-            const image = canvas.toDataURL('image/png', 1.0);
+            if(exportType === 'PNG') {
+                const image = canvas.toDataURL('image/png', 1.0);
 
-            const link = document.createElement('a');
-            link.href = image;
-            link.download = 'graph.png';
-            link.click();
+                const link = document.createElement('a');
+                link.href = image;
+                link.download = 'graph.png';
+                link.click();
+            } else {
+                const ctx = canvas.getContext('2d');
+                const width = canvas.width;
+                const height = canvas.height;
+
+                let svgContent = `
+                  <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" version="1.1">
+                    <rect width="${width}" height="${height}" fill="white"></rect>
+                    <image x="0" y="0" width="${width}" height="${height}" href="${canvas.toDataURL('image/png')}" />
+                </svg>`;
+
+                const svgBlob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8'});
+                const svgUrl = URL.createObjectURL(svgBlob);
+
+                const link = document.createElement('a');
+                link.href = svgUrl;
+                link.download = 'graph.svg';
+                link.click();
+            }
         } else {
-            alert('No chart found to export');
+            showError('No chart to export')
         }
     });
 });
