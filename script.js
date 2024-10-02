@@ -484,15 +484,20 @@ function drawLineChart(propsData) {
 
 // bar chart
 function drawBarChart(data) {
-    // Get all keys (excluding 'Year') for the data series
-    const fields = Object.keys(data[0]).filter(field => data.some(row => isNumeric(row[field])) && field !== 'Year'); // all keys without year
-    const keys = Object.keys(data[0]).filter(key => key !== 'Year') // Array of keys with value number
-    const labels = data.map(item => item.Year); // All years
+    const keys = [...yFields]
+    const labels = []; // All years
+
+    [...xFields].forEach((field) => {
+        data.forEach((item) => {
+            const value = item[field];
+            labels.push(value);
+        });
+    });
 
     const dataSeries = keys.map(key => data.map(item => item[key]));
     const maxValue = Math.max(
         ...data.flatMap(d =>
-            fields.map(field => {
+            keys.map(field => {
                 const value = d[field];
                 return isNumeric(value) ? parseFloat(value) : -Infinity; // Use -Infinity to exclude non-numeric values
             })
@@ -533,7 +538,6 @@ function drawBarChart(data) {
             const y = barCanvas.height - barPadding - (value / maxValue) * barChartHeight
 
 
-            console.log('value:', value)
             barCtx.fillStyle = getColor(j);
             barCtx.fillRect(x, y, barWidth / keys.length, (value / maxValue) * barChartHeight);
         });
@@ -704,11 +708,12 @@ function drawPieChart(data) {
     }
 
     function addField(fieldKey, axis) {
-        if(xFields.has(fieldKey)) {
+        if(xFields.has(fieldKey) || yFields.has(fieldKey)) {
             return showError('You already added this field');
         }
-
-        const isXAxis = axis === 'x' ? xFields: yFields;
+        if([...yFields].length > 1) {
+            return;
+        }
 
         const fieldItem = createElement({tag: 'div', className: 'field__axis__container' });
         const fieldItemText = createElement({tag: 'p', textContent: fieldKey });
