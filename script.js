@@ -861,8 +861,12 @@ function drawPieChart(propsData){
         if (xFields.has(fieldKey) || yFields.has(fieldKey)) {
             return showError('You already added this field');
         }
-        if ([...xFields].length > 1) {
-            return;
+        if (axis === 'x') {
+            if (xFields.size > 0) { // Check if there's already an item in xFields
+                const existingFieldKey = [...xFields][0]; // Get the existing field key
+                xFields.delete(existingFieldKey); // Remove the existing field
+                // Optional: Remove the corresponding UI element here if needed
+            }
         }
 
         const fieldItem = createElement({ tag: 'div', className: 'field__axis__container' });
