@@ -653,25 +653,38 @@ function drawPieChart(data) {
         chartContainer.appendChild(nextYearButton);
     }
 
-function checkDataForDuplicate(data) {
-    const result = {};
+    function checkDataForDuplicate(data) {
+        const result = {};
 
-    data.forEach(item => {
-       const { Year, ...values } = item;
+        data.forEach(item => {
+            // Ensure Year is defined and convert to string, else skip this item or handle accordingly
+            const yearValue = item.Year ? String(item.Year).toLowerCase() : null;
 
-       if(result[Year]) {
-           Object.keys(values).forEach(key => {
-              if(typeof values[key] === 'number') {
-                  result[Year][key] += values[key];
-              }
-           });
-       } else {
-           result[Year] = { ...values };
-       }
-    });
+            // If no valid Year, skip this entry
+            if (!yearValue) return;
 
-    return Object.entries(result).map(([year, values]) => ({ Year: parseInt(year), ...values }));
-};
+            const { Year, ...values } = item;
+
+            if (result[yearValue]) {
+                // If the year is already present, sum the numeric values
+                Object.keys(values).forEach(key => {
+                    if (typeof values[key] === 'number') {
+                        result[yearValue][key] += values[key];
+                    }
+                });
+            } else {
+                // Otherwise, initialize the year entry
+                result[yearValue] = { ...values };
+            }
+        });
+
+        // Convert the result back to an array, restoring the Year field as a number
+        return Object.entries(result).map(([year, values]) => ({
+            Year: parseInt(year, 10), // Parse year as a number
+            ...values
+        }));
+    }
+
 
     // Customization panel functions ✒️
     selectXField.addEventListener('click', showXFieldModal);
