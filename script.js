@@ -14,17 +14,15 @@ window.addEventListener('DOMContentLoaded', () => {
     const fieldXModal = document.getElementById('field-x-modal');
     const fieldYModal = document.getElementById('field-y-modal');
     const resetFileBtn = document.getElementById('reset-files-btn');
-    const dataRange = document.getElementById('data-range');
-    const dataRangeValue = document.getElementById('data-range-text');
     const exportBtn = document.getElementById('export-btn');
     const exportSelect = document.getElementById('select-export');
 
     // State Variables
     let uploadedData;
     let chosenChartType = 'Line';
+    let graphTitleValue = '';
     let xFields = new Set();
     let yFields = new Set();
-    let rangeOfData = 0;
     let exportType = 'PNG'; // png || pdf || svg
 
     // Error Handling
@@ -120,7 +118,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     function uploadDisplayData(data, file) {
-        dataRange.max = data.length;
         uploadedData = data;
         createDataPreviewTable(data);
         jsonOutput.textContent = JSON.stringify(data, null, 2); // Format JSON for readability
@@ -410,6 +407,14 @@ function drawLineChart(propsData) {
         const chartWidth = (canvas.width - legendWidth - 60) * scale;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        // Draw graph title
+
+        ctx.fillStyle = '#000';
+        ctx.font = '18px Arial';
+        const titleWidth = ctx.measureText(graphTitleValue).width; // Calculate the width of the title
+        const titleX = (canvas.width - titleWidth) / 2; // Calculate x position to center the title
+        ctx.fillText(graphTitleValue, titleX, padding - 10); // Draw the title
+
         // Draw X and Y axes
         ctx.beginPath();
         ctx.moveTo(padding + offsetX, padding + offsetY);
@@ -690,6 +695,10 @@ function drawPieChart(data) {
 
     // Customization panel functions ✒️
 
+    graphTitleInput.addEventListener('change', (e) => {
+        graphTitleValue = e.target.value;
+    });
+
     selectXField.addEventListener('click', showXFieldModal);
     selectYField.addEventListener('click', showYFieldModal);
 
@@ -774,13 +783,6 @@ function drawPieChart(data) {
             yCaptionContainer.appendChild(fieldItem);
         }
     }
-
-    // range
-
-    dataRange.addEventListener('change', (e) => {
-        dataRangeValue.textContent = e.target.value;
-        rangeOfData = +e.target.value;
-    });
 
     resetFileBtn.addEventListener('click', () => {
         tablePlaceholder.innerHTML = '';
