@@ -1,6 +1,6 @@
 :root {
     /* Primary Colors */
-    --primary-blue: #003366;      /* Main color that symbolizes formality and authority */
+    --primary-blue: #11406e;      /* Main color that symbolizes formality and authority */
     --secondary-blue: #0056A2;    /* Accent and background elements */
     --white: #FFFFFF;              /* Backgrounds and text on dark backgrounds */
     --gray-background: #F1F1F1;    /* Background for secondary elements */
@@ -51,7 +51,6 @@ body {
     margin: 0 auto;
     width: 100%;
     height: 100%;
-    /*max-width: 1280px;*/
 }
 
 .label {
@@ -92,6 +91,8 @@ body {
 .button-error {
     background-color: var(--error-red);
     color: var(--white);
+    border: none;
+    cursor: pointer;
 }
 
 .button-error:hover {
@@ -118,6 +119,7 @@ body {
     background-color: var(--primary-blue);
     color: var(--white);
 }
+
 
 .active {
   display: block;
@@ -477,6 +479,13 @@ header {
   .row-container {
     display: flex; /* Use flexbox to align items in a row */
     align-items: center; /* Vertically center items */
+  flex-wrap: wrap;
+  }
+
+  #manual-data-entry {
+      width: 100%;
+      height: 10rem;
+      margin-top: 10px;
   }
 
   /* Customization Section */
@@ -559,7 +568,7 @@ header {
 
 
   .drag-drop-area {
-      width: 30rem;
+      width: 100%;
       height: 320px;
       border: 2px dashed #ccc;
       border-radius: 5px;
@@ -569,7 +578,6 @@ header {
       cursor: pointer;
       transition: background-color 0.3s ease;
       text-align: center;
-      margin-right: 20px; 
   }
 
   .appropriate__types__title {
@@ -616,14 +624,6 @@ header {
     border: 2px solid var(--gray-background); /* Border color for the handle */
 }
 
-  #json-output {
-    white-space: pre-wrap; /* Preserve formatting */
-    max-width: 400px; /* Limit width for better display */
-    max-height: 300px;
-    overflow-y: auto;
-    border: 1px solid #ccc; /* Optional: add a border for distinction */
-    padding: 10px; /* Optional: add padding for better appearance */
-}
 
   table {
     border-collapse: collapse;

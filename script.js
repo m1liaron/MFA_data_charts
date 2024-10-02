@@ -1,27 +1,31 @@
 window.addEventListener('DOMContentLoaded', () => {
+    const themeToggle = document.getElementById('theme-toggle');
     const dropArea = document.getElementById('drop-area');
     const fileInput = document.getElementById('file-input');
-    const jsonOutput = document.getElementById('json-output');
+    const manualDataEntry = document.getElementById('manual-data-entry');
     const chartContainer = document.getElementById('chart__container');
     const fileList = document.getElementById('file-list');
     const dropdownButton = document.getElementById('dropdown-select');
     const generateChartBtn = document.getElementById('generate-chart-btn');
+    const graphTitleInput = document.getElementById('graph-title-input');
     const xCaptionContainer = document.getElementById('x-caption-container');
     const yCaptionContainer = document.getElementById('y-caption-container');
     const selectXField = document.getElementById('select-x-field');
     const selectYField = document.getElementById('select-y-field');
     const fieldXModal = document.getElementById('field-x-modal');
     const fieldYModal = document.getElementById('field-y-modal');
-    const dataRange = document.getElementById('data-range');
-    const dataRangeValue = document.getElementById('data-range-text');
+    const resetFileBtn = document.getElementById('reset-files-btn');
     const exportBtn = document.getElementById('export-btn');
+    const exportSelect = document.getElementById('select-export');
 
     // State Variables
     let uploadedData;
     let chosenChartType = 'Line';
+    let graphTitleValue = '';
     let xFields = new Set();
     let yFields = new Set();
-    let rangeOfData = 0;
+    const fieldColors = {};
+    let exportType = 'png'; // png || pdf || svg
 
     // Error Handling
     const errorCard = document.querySelector('.error-card');
@@ -35,13 +39,14 @@ window.addEventListener('DOMContentLoaded', () => {
         return colors[index % colors.length];  // Cycle through colors
     }
 
-    function createElement ({tag, className, id, textContent, width, height }) {
+    function createElement ({tag, className, id, textContent, width, height, type}) {
         const element = document.createElement(tag);
         if(id) element.id = id;
         if(className) element.className = className
         if(textContent) element.textContent = textContent;
         if (width) element.width = width ;
         if(height) element.height = height;
+        if(type) element.type = type;
         return element;
     }
 
@@ -116,15 +121,23 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     function uploadDisplayData(data, file) {
-        dataRange.max = data.length;
         uploadedData = data;
         createDataPreviewTable(data);
-        jsonOutput.textContent = JSON.stringify(data, null, 2); // Format JSON for readability
         displayFile(file);
     }
 
     const isNumeric = (value) => !isNaN(parseFloat(value)) && isFinite(value);
 
+    const toggleTheme = () => {
+        const body = document.body;
+        if (themeToggle.checked) {
+            body.classList.add('dark-mode');
+        } else {
+            body.classList.remove('dark-mode');
+        }
+    }
+
+    themeToggle.addEventListener('change', toggleTheme);
 
     ['dragenter', 'dragover', 'grapleave', 'drop'].forEach(eventName => {
         dropArea.addEventListener(eventName, preventDefaults, false)
@@ -144,7 +157,7 @@ window.addEventListener('DOMContentLoaded', () => {
     dropArea.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', (e) => handleFiles(fileInput.files));
 
-    function validateDataFileType(file) {
+        function validateDataFileType(file) {
         switch (file.type) {
             case 'application/json':
                 validateJsonFile(file);
@@ -184,14 +197,14 @@ window.addEventListener('DOMContentLoaded', () => {
                     const jsonData = JSON.parse(e.target.result);
                     uploadDisplayData(jsonData, file);
                 } catch(error) {
-                    jsonOutput.textContent = "Invalid JSON file";
+
                     showError('Invalid JSON file', '');
                 }
             };
 
             reader.readAsText(file);
         } else {
-            jsonOutput.textContent = "Please upload a valid JSON file";
+            showError("Please upload a valid JSON file")
         }
     }
 
@@ -205,7 +218,6 @@ window.addEventListener('DOMContentLoaded', () => {
                     uploadDisplayData(csvArray, file);
                 } catch (error) {
                     const errorMessage = `Invalid CSV file: ${error}`
-                    jsonOutput.textContent = errorMessage;
                     alert(errorMessage);
                 }
             }
@@ -317,37 +329,88 @@ dropdownButton.addEventListener('change', (e) => {
     chosenChartType = e.target.value;
 });
 
-generateChartBtn.addEventListener('click', () => drawChosenChart(chosenChartType));
+    generateChartBtn.addEventListener('click', () => drawChosenChart(chosenChartType));
 
-function drawChosenChart(chartType) {
-    if(!uploadedData || !uploadedData.length){
-        return showError('Export data to generate chart!');
+    function drawChosenChart(chartType) {
+        // Check if there is manual data entry
+        if (manualDataEntry.value.length) {
+            // Validate and parse JSON data
+            const validationResult = validateJsonData(manualDataEntry.value);
+            if (validationResult.error) {
+                // If there's an error, display it and return
+                return showError(validationResult.error);
+            } else {
+                // Assign validated data to uploadedData
+                uploadedData = validationResult.data;
+            }
+        }
+
+        // Check if uploadedData is valid
+        if (!uploadedData || !uploadedData.length) {
+            return showError('Export data to generate chart!');
+        }
+
+        // Draw the chosen chart
+        switch (chartType) {
+            case 'Line':
+                drawLineChart(uploadedData);
+                break;
+            case 'Bar':
+                drawBarChart(uploadedData);
+                break;
+            case 'Pie':
+                drawPieChart(uploadedData);
+                break;
+            default:
+                break;
+        }
     }
-    switch (chartType) {
-        case 'Line':
-            drawLineChart(uploadedData);
-            break;
-        case 'Bar':
-            drawBarChart(uploadedData);
-            break;
-        case 'Pie':
-            drawPieChart(uploadedData);
-            break;
-        default:
-            break;
+
+    function validateJsonData(json) {
+        try {
+            // Parse the JSON input
+            const parsedData = JSON.parse(json);
+
+            // Validate that parsedData is an array
+            if (!Array.isArray(parsedData)) {
+                return { error: 'Data must be an array of objects.', data: null };
+            }
+
+            // Validate each object in the array
+            parsedData.forEach((item, index) => {
+                if (typeof item !== 'object' || item === null) {
+                    return { error: `Item at index ${index} is not a valid object.`, data: null };
+                }
+
+                // Check if required fields exist
+                if (!item.hasOwnProperty('label') || !item.hasOwnProperty('value')) {
+                    return { error: `Item at index ${index} is missing required fields (label, value).`, data: null };
+                }
+
+                // Ensure that value is a number
+                if (typeof item.value !== 'number') {
+                    return { error: `Item at index ${index} has a non-numeric value.`, data: null };
+                }
+            });
+
+            // If all validations pass, return the parsed data
+            return { error: null, data: parsedData };
+
+        } catch (error) {
+            // Return error message for invalid JSON
+            return { error: 'Invalid JSON format: ' + error.message, data: null };
+        }
     }
-}
 
 // Generate chart
 
+function getFieldColor (field, i) {
+    return fieldColors[field] || getColor(i);
+}
+
 // line chart
 function drawLineChart(propsData) {
-    let data;
-    if(rangeOfData) {
-        data = propsData.slice(0, rangeOfData);
-    } else {
-        data = propsData
-    }
+    const data = checkDataForDuplicate(propsData);
     let scale = 1;
     let offsetX = 0;
     let offsetY = 0;
@@ -411,6 +474,14 @@ function drawLineChart(propsData) {
         const chartWidth = (canvas.width - legendWidth - 60) * scale;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        // Draw graph title
+
+        ctx.fillStyle = '#000';
+        ctx.font = '18px Arial';
+        const titleWidth = ctx.measureText(graphTitleValue).width; // Calculate the width of the title
+        const titleX = (canvas.width - titleWidth) / 2; // Calculate x position to center the title
+        ctx.fillText(graphTitleValue, titleX, padding - 10); // Draw the title
+
         // Draw X and Y axes
         ctx.beginPath();
         ctx.moveTo(padding + offsetX, padding + offsetY);
@@ -445,7 +516,7 @@ function drawLineChart(propsData) {
 
         // Draw lines for each field
         fields.forEach((field, index) => {
-            const color = getColor(index);
+            const color = getFieldColor(field, index)
             ctx.strokeStyle = color;
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -468,7 +539,7 @@ function drawLineChart(propsData) {
         const legendX = chartWidth + 80 + offsetX;
         let legendY = 50 + offsetY;
         fields.forEach((field, index) => {
-            const color = getColor(index);
+            const color = getFieldColor(field, index)
             ctx.fillStyle = color;
             ctx.fillRect(legendX, legendY, 20, 20);
             ctx.fillStyle = '#000';
@@ -483,17 +554,26 @@ function drawLineChart(propsData) {
 }
 
 // bar chart
-function drawBarChart(data) {
-    const keys = [...yFields]
-    const labels = []; // All years
+function drawBarChart(propsData) {
+    const data = checkDataForDuplicate(propsData);
+    let scale = 1;
+    let offsetX = 0;
+    let offsetY = 0;
+    let isDragging = false;
+    let dragStartX, dragStartY;
 
-    [...xFields].forEach((field) => {
+    const keys = [...yFields];
+    const labels = new Set(); // Use Set for unique labels
+
+    // Collect unique labels
+    xFields.forEach((field) => {
         data.forEach((item) => {
             const value = item[field];
-            labels.push(value);
+            labels.add(value);
         });
     });
 
+    const uniqueLabels = Array.from(labels); // Convert Set back to array
     const dataSeries = keys.map(key => data.map(item => item[key]));
     const maxValue = Math.max(
         ...data.flatMap(d =>
@@ -505,158 +585,252 @@ function drawBarChart(data) {
     );
 
     // Create canvas
-    const barCanvas = createElement({ tag:'canvas', id: 'bar-chart' });
-    barCanvas.id = 'bar-chart';
+    const barCanvas = createElement({ tag: 'canvas', id: 'bar-chart' });
     const barCtx = barCanvas.getContext('2d');
+
+    barCanvas.addEventListener('wheel', function(event) {
+        const zoomAmount = event.deltaY * -0.001;
+        scale = Math.min(Math.max(0.5, scale + zoomAmount), 5);
+        draw();
+    });
+
+    // Add mouse events for dragging
+    barCanvas.addEventListener('mousedown', function(event) {
+        isDragging = true;
+        dragStartX = event.offsetX - offsetX;
+        dragStartY = event.offsetY - offsetY;
+    });
+
+    barCanvas.addEventListener('mousemove', function(event) {
+        if(isDragging) {
+            offsetX = event.offsetX - dragStartX;
+            offsetY = event.offsetY - dragStartY;
+            draw();
+        }
+    });
+
+    barCanvas.addEventListener('mouseup', function() {
+        isDragging = false;
+    });
+
+    barCanvas.addEventListener('mouseleave', function() {
+        isDragging = false;
+    });
 
     barCanvas.width = 900;
     barCanvas.height = 400;
 
-    // Bar chart dimensions
-    const barChartHeight = barCanvas.height - 60; // Padding for labels
-    const barPadding = 50;
-    const barWidth = 40; // Width of each bar group (multiple series per year)
-    const seriedPadding = 10;
+    function draw() {
+        const barChartHeight = barCanvas.height - 60; // Padding for labels
+        const barPadding = 50;
+        const baseBarWidth = 40; // Base width of each bar group (without scaling)
+        const barWidth = baseBarWidth * scale; // Scale the bar width
 
-    // Clear the canvas
-    barCtx.clearRect(0, 0, barCanvas.width, barCanvas.height);
+        // Clear the canvas
+        barCtx.clearRect(0, 0, barCanvas.width, barCanvas.height);
 
-    // Draw X and Y axis
-    barCtx.beginPath();
-    barCtx.moveTo(barPadding, barPadding);
-    barCtx.lineTo(barPadding, barCanvas.height - barPadding);
-    barCtx.lineTo(barCanvas.width - barPadding, barCanvas.height - barPadding);
-    barCtx.strokeStyle = '#000';
-    barCtx.lineWidth = 2;
-    barCtx.stroke();
+        // Draw X and Y axis
+        barCtx.beginPath();
+        barCtx.moveTo(barPadding, barPadding);
+        barCtx.lineTo(barPadding, barCanvas.height - barPadding);
+        barCtx.lineTo(barCanvas.width - barPadding, barCanvas.height - barPadding);
+        barCtx.strokeStyle = '#000';
+        barCtx.lineWidth = 2;
+        barCtx.stroke();
 
-    // Color array for multiple series
-    labels.forEach((label, i) => {
-        keys.forEach((key, j) => {
-            const value = dataSeries[j][i];
-            const x = barPadding + i * (barWidth + 40) + j * (barWidth / keys.length + seriedPadding);
-            const y = barCanvas.height - barPadding - (value / maxValue) * barChartHeight
+        // Calculate and draw the title
+        barCtx.fillStyle = '#000';
+        barCtx.font = '18px Arial';
+        const titleWidth = barCtx.measureText(graphTitleValue).width; // Calculate the width of the title
+        const titleX = (barCanvas.width - titleWidth) / 2; // Calculate x position to center the title
+        barCtx.fillText(graphTitleValue, titleX, barPadding - 10); // Draw the title above the graph
 
+        // Draw bars
+        uniqueLabels.forEach((label, i) => {
+            keys.forEach((key, j) => {
+                const value = dataSeries[j][i];
+                const x = barPadding + (i * (barWidth + 10)) + j * (barWidth / keys.length);
+                const y = barCanvas.height - barPadding - (value / maxValue) * barChartHeight;
 
-            barCtx.fillStyle = getColor(j);
-            barCtx.fillRect(x, y, barWidth / keys.length, (value / maxValue) * barChartHeight);
+                barCtx.fillStyle = getFieldColor(key,  j)
+                barCtx.fillRect(x, y, barWidth / keys.length, (value / maxValue) * barChartHeight);
+            });
+
+            barCtx.fillStyle = '#000';
+            barCtx.font = '12px Arial';
+            const labelX = barPadding + i * (barWidth + 10);
+            barCtx.fillText(label, labelX + (barWidth / 4), barCanvas.height - barPadding + 20);
         });
 
-        barCtx.fillStyle = '#000';
-        barCtx.font = '12px Arial';
-        const labelX = barPadding + i * ( barWidth + 40);
-        barCtx.fillText(label, labelX + barWidth / 4, barCanvas.height - barPadding + 20);
-    });
+        // Draw Y axis values (scaling on Y-axis)
+        const stepSize = maxValue / 5;
+        for (let i = 0; i <= 5; i++) {
+            const y = barCanvas.height - barPadding - (i * (barChartHeight / 5));
+            const value = (stepSize * i).toFixed(0);
 
-    // Draw Y axis values (scaling on Y-axis)
-    const stepSize = maxValue / 5;
-    for (let i = 0; i <= 5; i++) {
-        const y = barCanvas.height - barPadding - (i * (barChartHeight / 5));
-        const value = (stepSize * i).toFixed(0);
+            barCtx.fillStyle = '#000';
+            barCtx.font = '12px Arial';
+            barCtx.fillText(value, barPadding - 40, y + 5);
+        }
 
-        barCtx.fillStyle = '#000';
-        barCtx.font = '12px Arial';
-        barCtx.fillText(value, barPadding - 40, y + 5);
+        // Add a legend
+        keys.forEach((key, index) => {
+            const legendX = barCanvas.width - barPadding + 10;
+            const legendY = barPadding + index * 20;
+
+            // Color square for the legend
+            barCtx.fillStyle = getFieldColor(key,  index)
+            barCtx.fillRect(legendX, legendY, 15, 15);
+
+            // Series name
+            barCtx.fillStyle = '#000';
+            barCtx.font = '12px Arial';
+            barCtx.fillText(key, legendX + 20, legendY + 12);
+        });
     }
 
-    // Add a legend
-    keys.forEach((key, index) => {
-        const legendX = barCanvas.width - barPadding + 10;
-        const legendY = barPadding + index * 20;
-
-        // Color square for the legend
-        barCtx.fillStyle = getColor(index);
-        barCtx.fillRect(legendX, legendY, 15, 15);
-
-        // Series name
-        barCtx.fillStyle = '#000';
-        barCtx.font = '12px Arial';
-        barCtx.fillText(key, legendX + 20, legendY + 12);
-    });
+    draw();
     addCanvasToChartContainer(barCanvas);
 }
 
 // Pie chart
-function drawPieChart(data) {
-        const pieCanvas = createElement({
-            tag: 'canvas',
-            id: 'pie-chart',
-            width: window.innerWidth - 100,
-            height: window.innerHeight - 450
-        });
+function drawPieChart(propsData) {
+    const validatedData = checkDataForDuplicate(propsData);
+    const data = [...validatedData];
 
-        const pieCtx = pieCanvas.getContext('2d');
-
-        let keyId = 0;
-
-        function updateChart() {
-            pieCtx.clearRect(0, 0, pieCanvas.width, pieCanvas.height);
-
-            const keys = [...yFields];
-            const total = keys.reduce((sum, key) => sum + data[keyId][key], 0);
-
-            const radius = pieCanvas.height / 2 - 20
-            let startAngle = 0;
-            keys.forEach((key, i) => {
-                const value = data[keyId][key];
-                const sliceAngle = (value / total) * 2 * Math.PI;
-                const color = getColor(i);
-
-                pieCtx.beginPath();
-                pieCtx.moveTo(pieCanvas.width / 2, pieCanvas.height / 2);
-                pieCtx.arc(
-                    pieCanvas.width / 2,
-                    pieCanvas.height / 2,
-                    radius,
-                    startAngle,
-                    startAngle + sliceAngle
-                );
-                pieCtx.closePath();
-
-                pieCtx.fillStyle = color;
-                pieCtx.fill();
-
-                const textX = pieCanvas.width / 2 + Math.cos(startAngle + sliceAngle / 2) * (radius / 1.5);
-                const textY = pieCanvas.height / 2 + Math.sin(startAngle + sliceAngle / 2) * (radius / 1.5);
-                const percentage = ((value / total) * 100).toFixed(1) + '%';
-
-                pieCtx.fillStyle = '#000';
-                pieCtx.font = '20px Arial';
-                pieCtx.fillText(percentage, textX, textY);
-
-                // Update startAngle for the next slice
-                startAngle += sliceAngle;
-
-
-                // Draw a legends
-                const legendX = pieCanvas.width - 500;
-                const legendY = 30 + i * 30;
-
-                pieCtx.fillStyle = color;
-                pieCtx.font = '20px Arial';
-                pieCtx.fillText(key, legendX + 20, legendY + 12);
-            });
-
-            // Draw a Year
-            pieCtx.fillStyle = '#000';
-            pieCtx.font = '30px Arial';
-            const xKey = [...xFields]
-            pieCtx.fillText(`Year: ${data[keyId][xKey]}`, pieCanvas.width / 3.5 - 50, 22);
+    // Convert all values in the data to strings, and then parse them as numbers
+    data.forEach(item => {
+        for (const key of yFields) {
+            item[key] = parseFloat(String(item[key])); // Ensure values are parsed as floats
         }
+    });
 
-        const nextYearButton = createElement({ tag:'button', textContent: 'Next year', className: 'button-primary' });
+    console.log('propsData', propsData);
+    console.log('data', data);
 
-        nextYearButton.addEventListener('click', () => {
-            keyId = (keyId + 1) % data.length;
-            updateChart();
+    const pieCanvas = createElement({
+        tag: 'canvas',
+        id: 'pie-chart',
+        width: window.innerWidth - 100,
+        height: window.innerHeight - 450
+    });
+
+    const pieCtx = pieCanvas.getContext('2d');
+
+    let keyId = 0;
+
+    function updateChart() {
+        pieCtx.clearRect(0, 0, pieCanvas.width, pieCanvas.height);
+
+        const keys = [...yFields];
+        const total = keys.reduce((sum, key) => sum + data[keyId][key], 0);
+
+        const radius = pieCanvas.height / 2 - 20;
+        let startAngle = 0;
+
+        keys.forEach((key, i) => {
+            const value = data[keyId][key];
+            const sliceAngle = (value / total) * 2 * Math.PI;
+            const color = getFieldColor(key, i);
+
+            pieCtx.beginPath();
+            pieCtx.moveTo(pieCanvas.width / 2, pieCanvas.height / 2);
+            pieCtx.arc(
+                pieCanvas.width / 2,
+                pieCanvas.height / 2,
+                radius,
+                startAngle,
+                startAngle + sliceAngle
+            );
+            pieCtx.closePath();
+
+            pieCtx.fillStyle = color;
+            pieCtx.fill();
+
+            const textX = pieCanvas.width / 2 + Math.cos(startAngle + sliceAngle / 2) * (radius / 1.5);
+            const textY = pieCanvas.height / 2 + Math.sin(startAngle + sliceAngle / 2) * (radius / 1.5);
+            const percentage = ((value / total) * 100).toFixed(1) + '%';
+
+            pieCtx.fillStyle = '#000';
+            pieCtx.font = '20px Arial';
+            pieCtx.fillText(percentage, textX, textY);
+
+            // Update startAngle for the next slice
+            startAngle += sliceAngle;
+
+            // Draw legends
+            const legendX = pieCanvas.width - 500;
+            const legendY = 30 + i * 30;
+
+            pieCtx.fillStyle = color;
+            pieCtx.font = '20px Arial';
+            pieCtx.fillText(key, legendX + 20, legendY + 12);
         });
-        updateChart();
 
-       addCanvasToChartContainer(pieCanvas);
-        chartContainer.appendChild(nextYearButton);
+        pieCtx.fillStyle = '#000';
+        pieCtx.font = '30px Arial';
+        pieCtx.textAlign = 'center';
+        pieCtx.fillText(graphTitleValue, pieCanvas.width / 2, 40); // Adjust the Y position as needed
+
+        // Draw a Year
+        pieCtx.fillStyle = '#000';
+        pieCtx.font = '30px Arial';
+        const xKey = [...xFields];
+        pieCtx.fillText(`Year: ${data[keyId][xKey]}`, pieCanvas.width / 3.5 - 50, 22);
     }
 
+    const nextYearButton = createElement({ tag: 'button', textContent: 'Next year', className: 'button-primary' });
+
+    nextYearButton.addEventListener('click', () => {
+        keyId = (keyId + 1) % data.length;
+        updateChart();
+    });
+
+    updateChart();
+    addCanvasToChartContainer(pieCanvas);
+    chartContainer.appendChild(nextYearButton);
+}
+
+
+    function checkDataForDuplicate(data) {
+        const result = {};
+
+        data.forEach(item => {
+            // Ensure Year is defined and convert to string, else skip this item or handle accordingly
+            const yearValue = item.Year ? String(item.Year).toLowerCase() : null;
+
+            // If no valid Year, skip this entry
+            if (!yearValue) return;
+
+            const { Year, ...values } = item;
+
+            if (result[yearValue]) {
+                // If the year is already present, sum the numeric values
+                Object.keys(values).forEach(key => {
+                    if (typeof values[key] === 'number') {
+                        result[yearValue][key] += values[key];
+                    }
+                });
+            } else {
+                // Otherwise, initialize the year entry
+                result[yearValue] = { ...values };
+            }
+        });
+
+        // Convert the result back to an array, restoring the Year field as a number
+        return Object.entries(result).map(([year, values]) => ({
+            Year: parseInt(year, 10), // Parse year as a number
+            ...values
+        }));
+    }
+
+
     // Customization panel functions ✒️
+
+    graphTitleInput.addEventListener('change', (e) => {
+        graphTitleValue = e.target.value;
+    });
+
     selectXField.addEventListener('click', showXFieldModal);
     selectYField.addEventListener('click', showYFieldModal);
 
@@ -709,22 +883,50 @@ function drawPieChart(data) {
     }
 
     function addField(fieldKey, axis) {
-        if(xFields.has(fieldKey) || yFields.has(fieldKey)) {
+        if (xFields.has(fieldKey) || yFields.has(fieldKey)) {
             return showError('You already added this field');
         }
-        if([...xFields].length > 1) {
-            return;
+        if (axis === 'x') {
+            if (xFields.size > 0) { // Check if there's already an item in xFields
+                const existingFieldKey = [...xFields][0]; // Get the existing field key
+                xFields.delete(existingFieldKey); // Remove the existing field
+                // Optional: Remove the corresponding UI element here if needed
+            }
         }
 
-        const fieldItem = createElement({tag: 'div', className: 'field__axis__container' });
-        const fieldItemText = createElement({tag: 'p', textContent: fieldKey });
-        const removeFieldIcon = createElement({tag: 'span', className: 'material-symbols-outlined remove_field_icon', textContent: 'close' });
+        const fieldItem = createElement({ tag: 'div', className: 'field__axis__container' });
+        const fieldItemText = createElement({ tag: 'p', textContent: fieldKey });
+        const removeFieldIcon = createElement({ tag: 'span', className: 'material-symbols-outlined remove_field_icon', textContent: 'close' });
+
+        // Only create a color input for Y-axis
+        let colorInput;
+        if (axis === 'y') {
+            colorInput = createElement({ tag: 'input', type: 'color' });
+
+            if (fieldColors[fieldKey]) {
+                colorInput.value = fieldColors[fieldKey];
+            } else {
+                let index = 0;
+                const color = getColor(index);
+                colorInput.value = color
+                fieldColors[fieldKey] = color;
+                index += 1
+            }
+
+            // Save the selected color when it changes
+            colorInput.addEventListener('input', (e) => {
+                fieldColors[fieldKey] = e.target.value; // Save color for the field
+            });
+
+            fieldItem.appendChild(colorInput); // Append the color input only for Y-axis
+        }
 
         removeFieldIcon.addEventListener('click', () => {
-            if(axis === 'x') {
+            if (axis === 'x') {
                 xFields.delete(fieldKey);
             } else {
                 yFields.delete(fieldKey);
+                delete fieldColors[fieldKey]; // Clean up color data when field is removed
             }
 
             fieldItem.remove();
@@ -733,7 +935,7 @@ function drawPieChart(data) {
         fieldItem.appendChild(fieldItemText);
         fieldItem.appendChild(removeFieldIcon);
 
-        if(axis === 'x') {
+        if (axis === 'x') {
             xFields.add(fieldKey);
             xCaptionContainer.appendChild(fieldItem);
         } else {
@@ -742,27 +944,105 @@ function drawPieChart(data) {
         }
     }
 
-    // range
-
-    dataRange.addEventListener('change', (e) => {
-        dataRangeValue.textContent = e.target.value;
-        rangeOfData = +e.target.value;
+    resetFileBtn.addEventListener('click', () => {
+        tablePlaceholder.innerHTML = '';
+        uploadedData = [];
+        xFields.clear();
+        yFields.clear();
+        fieldXModal.classList.add('hide');
+        fieldYModal.classList.add('hide');
+        chartContainer.innerHTML = '';
+        fileList.innerHTML = '';
     });
 
     // Export functions
+
+    exportSelect.addEventListener('change', (e) => {
+        exportType = e.target.value;
+    });
 
     exportBtn.addEventListener('click', () => {
         const canvas = document.querySelector(`#${chosenChartType.toLowerCase()}-chart`);
 
         if(canvas) {
-            const image = canvas.toDataURL('image/png', 1.0);
+            if(exportType === 'png') {
+                const image = canvas.toDataURL('image/png', 1.0);
 
-            const link = document.createElement('a');
-            link.href = image;
-            link.download = 'graph.png';
-            link.click();
+                const link = document.createElement('a');
+                link.href = image;
+                link.download = 'graph.png';
+                link.click();
+            } else if (exportType === 'svg') {
+                const width = canvas.width;
+                const height = canvas.height;
+
+                let svgContent = `
+                  <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" version="1.1">
+                    <rect width="${width}" height="${height}" fill="white"></rect>
+                    <image x="0" y="0" width="${width}" height="${height}" href="${canvas.toDataURL('image/png')}" />
+                </svg>`;
+
+                const svgBlob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8'});
+                const svgUrl = URL.createObjectURL(svgBlob);
+
+                const link = document.createElement('a');
+                link.href = svgUrl;
+                link.download = 'graph.svg';
+                link.click();
+            } else if(exportType === 'pdf') {
+                const printWindow = window.open('', '_blank');
+
+                if (printWindow) {
+                    const image = canvas.toDataURL('image/png');
+                    printWindow.document.write(`
+                    <html>
+                        <head>
+                            <title>{graphTitleValue}</title>
+                        </head>
+                        <body>
+                            <img src="${image}" style="width: 100%; height: auto;" />
+                        </body>
+                    </html>
+                `);
+                    printWindow.document.close(); // Close the document to finish loading
+                    printWindow.print(); // Trigger the print dialog
+                    // printWindow.close(); // Optionally close the print window after printing
+                }
+            }
         } else {
-            alert('No chart found to export');
+            showError('No chart to export')
         }
     });
+
+    window.addEventListener('keydown', (e) => {
+        // Check if the Control key and the P key are pressed together
+        if (e.ctrlKey && e.code === 'KeyP') {
+            e.preventDefault(); // Prevent the default print behavior
+
+            const canvas = document.querySelector(`#${chosenChartType.toLowerCase()}-chart`);
+
+            if (canvas) {
+                const printWindow = window.open('', '_blank');
+
+                if (printWindow) {
+                    const image = canvas.toDataURL('image/png');
+                    printWindow.document.write(`
+                    <html>
+                        <head>
+                            <title>{graphTitleValue}</title>
+                        </head>
+                        <body>
+                            <img src="${image}" style="width: 100%; height: auto;" />
+                        </body>
+                    </html>
+                `);
+                    printWindow.document.close(); // Close the document to finish loading
+                    printWindow.print(); // Trigger the print dialog
+                }
+            } else {
+                showError('No chart to export');
+            }
+        }
+    });
+
 });
