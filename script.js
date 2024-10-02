@@ -343,6 +343,10 @@ function drawChosenChart(chartType) {
 
 // Generate chart
 
+function getFieldColor (field, i) {
+    return fieldColors[field] || getColor(i);
+}
+
 // line chart
 function drawLineChart(propsData) {
     const data = checkDataForDuplicate(propsData);
@@ -451,7 +455,7 @@ function drawLineChart(propsData) {
 
         // Draw lines for each field
         fields.forEach((field, index) => {
-            const color = getColor(index);
+            const color = getFieldColor(field, index)
             ctx.strokeStyle = color;
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -474,7 +478,7 @@ function drawLineChart(propsData) {
         const legendX = chartWidth + 80 + offsetX;
         let legendY = 50 + offsetY;
         fields.forEach((field, index) => {
-            const color = getColor(index);
+            const color = getFieldColor(field, index)
             ctx.fillStyle = color;
             ctx.fillRect(legendX, legendY, 20, 20);
             ctx.fillStyle = '#000';
@@ -580,7 +584,7 @@ function drawBarChart(propsData) {
                 const x = barPadding + (i * (barWidth + 10)) + j * (barWidth / keys.length);
                 const y = barCanvas.height - barPadding - (value / maxValue) * barChartHeight;
 
-                barCtx.fillStyle = getColor(j);
+                barCtx.fillStyle = getFieldColor(key,  j)
                 barCtx.fillRect(x, y, barWidth / keys.length, (value / maxValue) * barChartHeight);
             });
 
@@ -607,7 +611,7 @@ function drawBarChart(propsData) {
             const legendY = barPadding + index * 20;
 
             // Color square for the legend
-            barCtx.fillStyle = getColor(index);
+            barCtx.fillStyle = getFieldColor(key,  index)
             barCtx.fillRect(legendX, legendY, 15, 15);
 
             // Series name
@@ -646,7 +650,7 @@ function drawPieChart(propsData){
             keys.forEach((key, i) => {
                 const value = data[keyId][key];
                 const sliceAngle = (value / total) * 2 * Math.PI;
-                const color = getColor(i);
+                const color = getFieldColor(key, i);
 
                 pieCtx.beginPath();
                 pieCtx.moveTo(pieCanvas.width / 2, pieCanvas.height / 2);
@@ -811,6 +815,12 @@ function drawPieChart(propsData){
 
             if (fieldColors[fieldKey]) {
                 colorInput.value = fieldColors[fieldKey];
+            } else {
+                let index = 0;
+                const color = getColor(index);
+                colorInput.value = color
+                fieldColors[fieldKey] = color;
+                index += 1
             }
 
             // Save the selected color when it changes
