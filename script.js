@@ -845,7 +845,6 @@ function drawPieChart(propsData){
     exportBtn.addEventListener('click', () => {
         const canvas = document.querySelector(`#${chosenChartType.toLowerCase()}-chart`);
 
-        console.log(exportType)
         if(canvas) {
             if(exportType === 'png') {
                 const image = canvas.toDataURL('image/png', 1.0);
@@ -895,4 +894,36 @@ function drawPieChart(propsData){
             showError('No chart to export')
         }
     });
+
+    window.addEventListener('keydown', (e) => {
+        // Check if the Control key and the P key are pressed together
+        if (e.ctrlKey && e.code === 'KeyP') {
+            e.preventDefault(); // Prevent the default print behavior
+
+            const canvas = document.querySelector(`#${chosenChartType.toLowerCase()}-chart`);
+
+            if (canvas) {
+                const printWindow = window.open('', '_blank');
+
+                if (printWindow) {
+                    const image = canvas.toDataURL('image/png');
+                    printWindow.document.write(`
+                    <html>
+                        <head>
+                            <title>{graphTitleValue}</title>
+                        </head>
+                        <body>
+                            <img src="${image}" style="width: 100%; height: auto;" />
+                        </body>
+                    </html>
+                `);
+                    printWindow.document.close(); // Close the document to finish loading
+                    printWindow.print(); // Trigger the print dialog
+                }
+            } else {
+                showError('No chart to export');
+            }
+        }
+    });
+
 });
