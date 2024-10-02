@@ -1,7 +1,7 @@
 window.addEventListener('DOMContentLoaded', () => {
+    const themeToggle = document.getElementById('theme-toggle');
     const dropArea = document.getElementById('drop-area');
     const fileInput = document.getElementById('file-input');
-    const jsonOutput = document.getElementById('json-output');
     const chartContainer = document.getElementById('chart__container');
     const fileList = document.getElementById('file-list');
     const dropdownButton = document.getElementById('dropdown-select');
@@ -122,12 +122,21 @@ window.addEventListener('DOMContentLoaded', () => {
     function uploadDisplayData(data, file) {
         uploadedData = data;
         createDataPreviewTable(data);
-        jsonOutput.textContent = JSON.stringify(data, null, 2); // Format JSON for readability
         displayFile(file);
     }
 
     const isNumeric = (value) => !isNaN(parseFloat(value)) && isFinite(value);
 
+    const toggleTheme = () => {
+        const body = document.body;
+        if (themeToggle.checked) {
+            body.classList.add('dark-mode');
+        } else {
+            body.classList.remove('dark-mode');
+        }
+    }
+
+    themeToggle.addEventListener('change', toggleTheme);
 
     ['dragenter', 'dragover', 'grapleave', 'drop'].forEach(eventName => {
         dropArea.addEventListener(eventName, preventDefaults, false)
@@ -187,14 +196,14 @@ window.addEventListener('DOMContentLoaded', () => {
                     const jsonData = JSON.parse(e.target.result);
                     uploadDisplayData(jsonData, file);
                 } catch(error) {
-                    jsonOutput.textContent = "Invalid JSON file";
+
                     showError('Invalid JSON file', '');
                 }
             };
 
             reader.readAsText(file);
         } else {
-            jsonOutput.textContent = "Please upload a valid JSON file";
+            showError("Please upload a valid JSON file")
         }
     }
 
@@ -208,7 +217,6 @@ window.addEventListener('DOMContentLoaded', () => {
                     uploadDisplayData(csvArray, file);
                 } catch (error) {
                     const errorMessage = `Invalid CSV file: ${error}`
-                    jsonOutput.textContent = errorMessage;
                     alert(errorMessage);
                 }
             }
@@ -862,7 +870,6 @@ function drawPieChart(propsData){
         fieldXModal.classList.add('hide');
         fieldYModal.classList.add('hide');
         chartContainer.innerHTML = '';
-        jsonOutput.textContent = '';
         fileList.innerHTML = '';
     });
 
