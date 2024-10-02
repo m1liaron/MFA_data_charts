@@ -4,10 +4,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const jsonOutput = document.getElementById('json-output');
     const chartContainer = document.getElementById('chart__container');
     const fileList = document.getElementById('file-list');
-    // Generation chart elements
     const dropdownButton = document.getElementById('dropdown-select');
     const generateChartBtn = document.getElementById('generate-chart-btn');
-    // customization panel
     const xCaptionContainer = document.getElementById('x-caption-container');
     const yCaptionContainer = document.getElementById('y-caption-container');
     const selectXField = document.getElementById('select-x-field');
@@ -16,25 +14,25 @@ window.addEventListener('DOMContentLoaded', () => {
     const fieldYModal = document.getElementById('field-y-modal');
     const dataRange = document.getElementById('data-range');
     const dataRangeValue = document.getElementById('data-range-text');
-    // Export section
     const exportBtn = document.getElementById('export-btn');
 
+    // State Variables
     let uploadedData;
     let chosenChartType = 'Line';
     let xFields = new Set();
     let yFields = new Set();
     let rangeOfData = 0;
 
-    // Common functions
+    // Error Handling
+    const errorCard = document.querySelector('.error-card');
+    const messageText = errorCard.querySelector('.message-text');
+    const subText = errorCard.querySelector('.sub-text');
+    const closeBtn = document.querySelector('#close-btn');
 
+    // Common functions
     function getColor(index) {
         const colors = ['#00afff', '#ff5733', '#33ff57', '#ff33a6', '#33a6ff'];
         return colors[index % colors.length];  // Cycle through colors
-    }
-
-    function addCanvasToChartContainer(canvas) {
-        chartContainer.innerHTML = '';
-        chartContainer.appendChild(canvas);
     }
 
     function createElement ({tag, className, id, textContent, width, height }) {
@@ -46,23 +44,6 @@ window.addEventListener('DOMContentLoaded', () => {
         if(height) element.height = height;
         return element;
     }
-
-    function uploadDisplayData(data, file) {
-        dataRange.max = data.length;
-        uploadedData = data;
-        createDataPreviewTable(data);
-        jsonOutput.textContent = JSON.stringify(data, null, 2); // Format JSON for readability
-        displayFile(file);
-    }
-
-    const isNumeric = (value) => !isNaN(parseFloat(value)) && isFinite(value);
-
-    // Show & hide ⭕Error⭕
-
-    const errorCard = document.querySelector('.error-card');
-    const messageText = errorCard.querySelector('.message-text');
-    const subText = errorCard.querySelector('.sub-text');
-    const closeBtn = document.querySelector('#close-btn');
 
     const showError = (title = '', message = '') => {
         messageText.textContent = title;
@@ -92,46 +73,15 @@ window.addEventListener('DOMContentLoaded', () => {
 
     closeBtn.addEventListener('click', hideError);
 
-    // Drag & drop functionality
-
-    ['dragenter', 'dragover', 'grapleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, preventDefaults, false)
-    });
-
     function preventDefaults(e) {
         e.preventDefault();
         e.stopPropagation();
     }
 
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropArea.addEventListener(eventName, () => dropArea.classList.add('active'), false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, () => dropArea.classList.remove('active'), false);
-    });
-
-    dropArea.addEventListener('drop', handleDrop, false);
-
     function handleDrop(e) {
         const dt = e.dataTransfer;
         const files = dt.files;
         handleFiles(files);
-    }
-
-    dropArea.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', (e) => handleFiles(fileInput.files));
-
-    const allowedFileTypes = ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/json'];
-
-    function isFileTypeAllowed(file) {
-        return allowedFileTypes.includes(file.type) || isFileExtensionAllowed(file.name);
-    }
-
-    function isFileExtensionAllowed(fileName) {
-        const allowedExtensions = ['csv', 'xls', 'xlsx', 'json'];
-        const fileExtension = fileName.split('.').pop().toLowerCase();
-        return allowedExtensions.includes(fileExtension);
     }
 
     function handleFiles(files) {
@@ -143,6 +93,56 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    const isFileTypeAllowed = (file) => {
+        const allowedFileTypes = [
+            'text/csv',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/json'
+        ];
+        return allowedFileTypes.includes(file.type) || isFileExtensionAllowed(file.name);
+    };
+
+    function isFileExtensionAllowed(fileName) {
+        const allowedExtensions = ['csv', 'xls', 'xlsx', 'json'];
+        const fileExtension = fileName.split('.').pop().toLowerCase();
+        return allowedExtensions.includes(fileExtension);
+    }
+
+    function addCanvasToChartContainer(canvas) {
+        chartContainer.innerHTML = '';
+        chartContainer.appendChild(canvas);
+    }
+
+    function uploadDisplayData(data, file) {
+        dataRange.max = data.length;
+        uploadedData = data;
+        createDataPreviewTable(data);
+        jsonOutput.textContent = JSON.stringify(data, null, 2); // Format JSON for readability
+        displayFile(file);
+    }
+
+    const isNumeric = (value) => !isNaN(parseFloat(value)) && isFinite(value);
+
+
+    ['dragenter', 'dragover', 'grapleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false)
+    });
+
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => dropArea.classList.add('active'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => dropArea.classList.remove('active'), false);
+    });
+
+    dropArea.addEventListener('drop', handleDrop, false);
+
+    dropArea.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => handleFiles(fileInput.files));
 
     function validateDataFileType(file) {
         switch (file.type) {
@@ -592,7 +592,7 @@ function drawPieChart(data) {
         function updateChart() {
             pieCtx.clearRect(0, 0, pieCanvas.width, pieCanvas.height);
 
-            const keys = Object.keys(data[0]).filter(field => data.some(row => isNumeric(row[field])) && field !== 'Year');
+            const keys = [...yFields];
             const total = keys.reduce((sum, key) => sum + data[keyId][key], 0);
 
             const radius = pieCanvas.height / 2 - 20
@@ -640,7 +640,8 @@ function drawPieChart(data) {
             // Draw a Year
             pieCtx.fillStyle = '#000';
             pieCtx.font = '30px Arial';
-            pieCtx.fillText(`Year: ${data[keyId]['Year']}`, pieCanvas.width / 3.5 - 50, 22);
+            const xKey = [...xFields]
+            pieCtx.fillText(`Year: ${data[keyId][xKey]}`, pieCanvas.width / 3.5 - 50, 22);
         }
 
         const nextYearButton = createElement({ tag:'button', textContent: 'Next year', className: 'button-primary' });
@@ -711,7 +712,7 @@ function drawPieChart(data) {
         if(xFields.has(fieldKey) || yFields.has(fieldKey)) {
             return showError('You already added this field');
         }
-        if([...yFields].length > 1) {
+        if([...xFields].length > 1) {
             return;
         }
 
