@@ -23,6 +23,7 @@ window.addEventListener('DOMContentLoaded', () => {
     let graphTitleValue = '';
     let xFields = new Set();
     let yFields = new Set();
+    const fieldColors = {};
     let exportType = 'png'; // png || pdf || svg
 
     // Error Handling
@@ -37,13 +38,14 @@ window.addEventListener('DOMContentLoaded', () => {
         return colors[index % colors.length];  // Cycle through colors
     }
 
-    function createElement ({tag, className, id, textContent, width, height }) {
+    function createElement ({tag, className, id, textContent, width, height, type}) {
         const element = document.createElement(tag);
         if(id) element.id = id;
         if(className) element.className = className
         if(textContent) element.textContent = textContent;
         if (width) element.width = width ;
         if(height) element.height = height;
+        if(type) element.type = type;
         return element;
     }
 
@@ -791,22 +793,40 @@ function drawPieChart(propsData){
     }
 
     function addField(fieldKey, axis) {
-        if(xFields.has(fieldKey) || yFields.has(fieldKey)) {
+        if (xFields.has(fieldKey) || yFields.has(fieldKey)) {
             return showError('You already added this field');
         }
-        if([...xFields].length > 1) {
+        if ([...xFields].length > 1) {
             return;
         }
 
-        const fieldItem = createElement({tag: 'div', className: 'field__axis__container' });
-        const fieldItemText = createElement({tag: 'p', textContent: fieldKey });
-        const removeFieldIcon = createElement({tag: 'span', className: 'material-symbols-outlined remove_field_icon', textContent: 'close' });
+        const fieldItem = createElement({ tag: 'div', className: 'field__axis__container' });
+        const fieldItemText = createElement({ tag: 'p', textContent: fieldKey });
+        const removeFieldIcon = createElement({ tag: 'span', className: 'material-symbols-outlined remove_field_icon', textContent: 'close' });
+
+        // Only create a color input for Y-axis
+        let colorInput;
+        if (axis === 'y') {
+            colorInput = createElement({ tag: 'input', type: 'color' });
+
+            if (fieldColors[fieldKey]) {
+                colorInput.value = fieldColors[fieldKey];
+            }
+
+            // Save the selected color when it changes
+            colorInput.addEventListener('input', (e) => {
+                fieldColors[fieldKey] = e.target.value; // Save color for the field
+            });
+
+            fieldItem.appendChild(colorInput); // Append the color input only for Y-axis
+        }
 
         removeFieldIcon.addEventListener('click', () => {
-            if(axis === 'x') {
+            if (axis === 'x') {
                 xFields.delete(fieldKey);
             } else {
                 yFields.delete(fieldKey);
+                delete fieldColors[fieldKey]; // Clean up color data when field is removed
             }
 
             fieldItem.remove();
@@ -815,7 +835,7 @@ function drawPieChart(propsData){
         fieldItem.appendChild(fieldItemText);
         fieldItem.appendChild(removeFieldIcon);
 
-        if(axis === 'x') {
+        if (axis === 'x') {
             xFields.add(fieldKey);
             xCaptionContainer.appendChild(fieldItem);
         } else {
